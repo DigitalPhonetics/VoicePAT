@@ -1,0 +1,12 @@
+-r modules/tts/IMSToucan/requirements.txt
+numpy
+torch
+torchaudio
+scikit-learn
+speechbrain
+jupyter
+espnet
+espnet_model_zoo
+pyyaml
+openpyxl
+seaborn

@@ -1,0 +1,1 @@
+from .embeddings_generator import EmbeddingsGenerator
