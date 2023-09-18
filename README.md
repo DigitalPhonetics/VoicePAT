@@ -1,7 +1,8 @@
-# VoicePAT: Voice Privacy Anonymization Toolkit
+# [VoicePAT: Voice Privacy Anonymization Toolkit](http://arxiv.org/abs/2309.08049)
 
 **Note: This repository and its documentation are still under construction but can already be used for both 
-anonymization and evaluation.**
+anonymization and evaluation. We welcome all contributions to introduce more generation methods or evaluation metrics to the VoicPAT framework. 
+If you are interested in contributing, please leave comments on a GitHub issue.**
 
 VoicePAT is a toolkit for speaker anonymization research, with special focus on speaker anonymization. 
 It is based on the framework(s) by the [VoicePrivacy Challenges](https://github.com/Voice-Privacy-Challenge/Voice-Privacy-Challenge-2022) but contains the following improvements:
@@ -84,3 +85,4 @@ Several parts of this toolkit are based on or use code from external sources, i.
 
 See the READMEs for [anonymization](anonymization/README.md) and [evaluation](evaluation/README.md) for more 
 information.
+
