@@ -79,6 +79,8 @@ def save_yaml(config, filename):
 def _transform_paths(yaml_dict):
     path_tags = {'_dir', '_file', '_path', '_folder'}
     for key, value in yaml_dict.items():
+        if value is None:
+            continue 
         if isinstance(value, dict):
             yaml_dict[key] = _transform_paths(value)
         elif any(tag in key for tag in path_tags):
