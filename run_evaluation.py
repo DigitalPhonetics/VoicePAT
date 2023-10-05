@@ -226,7 +226,7 @@ def asr_train(params, libri_dir, model_name, model_dir, anon_data_suffix):
         '--max_wav_duration', '30',
         '--test_sets', "test_clean test_other dev_clean dev_other",
         '--valid_set', "dev",
-        '--bpe_train_text', "data/train-clean-360/text",
+        '--bpe_train_text', "data/train_clean_360/text",
         '--nj', str(params.get('nj', 5))
     ]
 
@@ -234,13 +234,13 @@ def asr_train(params, libri_dir, model_name, model_dir, anon_data_suffix):
 
     if params.get('anon', False):
         local_data_opts = ' '.join([str(libri_dir), str(params['train_data_dir']), anon_data_suffix])
-        train_set = f'train-clean-360_{anon_data_suffix}'
+        train_set = f'train_clean_360_{anon_data_suffix}'
         if params.get('finetuning', False) is True:
             asr_config = 'conf/train_asr_transformer_anon.yaml'
             train_params.extend(['--pretrained_model', f'{str(params["pretrained_model"])}/valid.acc.ave.pth'])
     else:
         local_data_opts = str(libri_dir)
-        train_set = 'train-clean-360'
+        train_set = 'train_clean_360'
 
     train_params.extend(['--local_data_opts', local_data_opts,
                          '--train_set', train_set,
