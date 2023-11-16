@@ -92,7 +92,7 @@ class STTTSPipeline:
             # Step 3: Synthesize
             wav_scp = self.speech_synthesis.synthesize_speech(dataset_name=dataset_name, texts=texts,
                                                               speaker_embeddings=anon_embeddings,
-                                                              prosody=anon_prosody, emb_level=anon_embeddings.vec_level)
+                                                              prosody=anon_prosody, emb_level=anon_embeddings.emb_level)
             anon_wav_scps[dataset_name] = wav_scp
             print('Done')
 

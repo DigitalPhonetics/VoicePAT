@@ -36,7 +36,7 @@ class SpeakerAnonymization:
             # simply load them
             print('No computation of anonymized embeddings necessary; load existing anonymized speaker embeddings '
                   'instead...')
-            anon_embeddings = SpeakerEmbeddings(vec_type=self.vec_type, vec_level=self.emb_level, device=self.device)
+            anon_embeddings = SpeakerEmbeddings(vec_type=self.vec_type, emb_level=self.emb_level, device=self.device)
             anon_embeddings.load_vectors(dataset_results_dir)
             return anon_embeddings
         else:

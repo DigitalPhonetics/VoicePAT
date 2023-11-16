@@ -58,7 +58,7 @@ class PoolAnonymizer(BaseAnonymizer):
     def _load_pool_embeddings(self, pool_data_dir, pool_vec_path, embed_model_dir):
         print(pool_data_dir)
         if pool_vec_path.exists():
-            pool_embeddings = SpeakerEmbeddings(vec_type=self.vec_type, vec_level='spk', device=self.device)
+            pool_embeddings = SpeakerEmbeddings(vec_type=self.vec_type, emb_level='spk', device=self.device)
             pool_embeddings.load_vectors(pool_vec_path)
         else:
             extraction_settings = {'vec_type': self.vec_type, 'emb_level': 'spk'}
@@ -90,7 +90,7 @@ class PoolAnonymizer(BaseAnonymizer):
             anon_vectors.append(anon_vec)
             genders.append(gender if not self.cross_gender else REVERSED_GENDERS[gender])
 
-        anon_embeddings = SpeakerEmbeddings(vec_type=self.vec_type, device=self.device, vec_level=emb_level)
+        anon_embeddings = SpeakerEmbeddings(vec_type=self.vec_type, device=self.device, emb_level=emb_level)
         anon_embeddings.set_vectors(identifiers=identifiers, vectors=torch.stack(anon_vectors, dim=0),
                                     speakers=speakers, genders=genders)
 

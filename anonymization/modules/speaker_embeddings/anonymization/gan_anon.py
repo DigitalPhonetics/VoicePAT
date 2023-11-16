@@ -50,7 +50,7 @@ class GANAnonymizer(BaseAnonymizer):
             anon_vectors.append(anon_vec)
             genders.append(gender)
 
-        anon_embeddings = SpeakerEmbeddings(vec_type=self.vec_type, device=self.device, vec_level=emb_level)
+        anon_embeddings = SpeakerEmbeddings(vec_type=self.vec_type, device=self.device, emb_level=emb_level)
         anon_embeddings.set_vectors(identifiers=identifiers, vectors=torch.stack(anon_vectors, dim=0),
                                     speakers=speakers, genders=genders)
         if self.save_intermediate:

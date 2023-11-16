@@ -50,8 +50,8 @@ modules:
     emb_level: spk   # possible: spk, utt
     anon_method: gan   # possible: pool, random
     anon_name: gan_style-embed
-    extraction_results_path: !ref <results_dir>/original_speaker_embeddings/<modules[speaker_embeddings][vec_type]>_<modules[speaker_embeddings][vec_level]>-level
-    anon_results_path: !ref <results_dir>/anon_speaker_embeddings/<modules[speaker_embeddings][vec_type]>_<modules[speaker_embeddings][vec_level]>-level
+    extraction_results_path: !ref <results_dir>/original_speaker_embeddings/<modules[speaker_embeddings][vec_type]>_<modules[speaker_embeddings][emb_level]>-level
+    anon_results_path: !ref <results_dir>/anon_speaker_embeddings/<modules[speaker_embeddings][vec_type]>_<modules[speaker_embeddings][emb_level]>-level
 
     # pool_anon_settings are only used if anon_method == pool
     pool_anon_settings:

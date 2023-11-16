@@ -33,7 +33,7 @@ class ASV:
 
         self.extractor = SpeakerExtraction(results_dir=self.score_save_dir / 'emb_xvect',
                                            model_dir=model_dir, devices=[self.device],
-                                           settings={'vec_type': vec_type, 'vec_level': 'utt'})
+                                           settings={'vec_type': vec_type, 'emb_level': 'utt'})
 
     def compute_trial_scores(self, trials, enrol_indices, test_indices, out_file, sim_scores):
         scores = []
@@ -85,8 +85,8 @@ class ASV:
     def eer_compute(self, enrol_dir, test_dir, trial_runs_file):
         # Compute all enrol(spk level) and Test(utt level) embeddings
         # enroll vectors are the speaker-level average vectors
-        enrol_all_dict = self.extractor.extract_speakers(dataset_path=Path(enrol_dir), vec_level='spk')
-        test_all_dict = self.extractor.extract_speakers(dataset_path=Path(test_dir), vec_level='utt')
+        enrol_all_dict = self.extractor.extract_speakers(dataset_path=Path(enrol_dir), emb_level='spk')
+        test_all_dict = self.extractor.extract_speakers(dataset_path=Path(test_dir), emb_level='utt')
 
         enrol_vectors = []
         enrol_ids = []
@@ -148,7 +148,7 @@ class ASV:
                                               out_dir=plda_data_dir)
                 print(f'Using data under {plda_data_dir}')
 
-                train_dict = self.extractor.extract_speakers(dataset_path=plda_data_dir, vec_level='utt')
+                train_dict = self.extractor.extract_speakers(dataset_path=plda_data_dir, emb_level='utt')
                 self.plda = PLDAModel(train_embeddings=train_dict, results_path=self.plda_model_dir)
 
             plda_score_object = self.plda.compute_distance(enrollment_vectors=enrol_vectors, enrollment_ids=enrol_ids,

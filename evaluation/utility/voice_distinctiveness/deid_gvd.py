@@ -19,7 +19,7 @@ class VoiceDistinctiveness:
         self.num_per_spk = num_per_spk
 
         self.extractor = SpeakerExtraction(results_dir=score_save_dir / 'emb_xvect', model_dir=spk_ext_model_dir,
-                                           devices=[device], settings={'vec_type': vec_type, 'vec_level': 'utt'})
+                                           devices=[device], settings={'vec_type': vec_type, 'emb_level': 'utt'})
 
         self.asv = ASV(model_dir=spk_ext_model_dir, device=device, score_save_dir=score_save_dir, distance=distance,
                        plda_settings=plda_settings, vec_type=vec_type)
