@@ -61,6 +61,8 @@ class SpeakerExtraction:
         if (dataset_results_dir / 'speaker_vectors.pt').exists() and not self.force_compute:
             print('No speaker extraction necessary; load existing embeddings instead...')
             speaker_embeddings.load_vectors(dataset_results_dir)
+            # assume the loaded vectors are computed according to the setting in config
+            speaker_embeddings.emb_level = emb_level
         else:
             print(f'Extract embeddings of {len(wav_scp)} utterances')
             speaker_embeddings.new = True
