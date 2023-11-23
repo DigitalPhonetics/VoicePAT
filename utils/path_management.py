@@ -39,7 +39,7 @@ def scan_checkpoint(cp_dir, prefix):
 
 def get_datasets(config):
     datasets = {}
-    data_dir = config.get('data_dir', None)
+    data_dir = config.get('data_dir', None).expanduser() # if '~' is given in path then manually expand
     for dataset in config['datasets']:
         if data_dir:
             for subset in dataset['enrolls'] + dataset['trials']:
