@@ -1,3 +1,4 @@
+from pathlib import Path
 import torch
 import numpy as np
 from scipy.spatial.distance import cosine
@@ -15,7 +16,7 @@ class GANAnonymizer(BaseAnonymizer):
         super().__init__(vec_type=vec_type, device=device)
 
         self.model_name = model_name if model_name else f'gan_{vec_type}'
-        self.vectors_file = vectors_file
+        self.vectors_file = Path(vectors_file)
         self.unused_indices_file = self.vectors_file.with_name(f'unused_indices_{self.vectors_file.name}')
         self.sim_threshold = sim_threshold
         self.save_intermediate = save_intermediate

@@ -1,0 +1,9 @@
+!new:anonymization.modules.speaker_embeddings.anonymization.gan_anon.GANAnonymizer
+  models_dir: null # overridden by main .yaml
+  vec_type: null   # overriden by main .yaml
+  save_intermediate: null   # overriden by main .yaml
+  model_name: null   # overriden by constructor
+  vectors_file: !ref <models_dir>/anonymization/style-embed_wgan.pt
+  gan_model_path: !ref <models_dir>/anonymization/gan_<vec_type>/<vec_type>_wgan.pt
+  num_sampled: 5000
+  sim_threshold: 0.7

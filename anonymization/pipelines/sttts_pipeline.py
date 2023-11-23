@@ -33,14 +33,12 @@ class STTTSPipeline:
         self.speaker_extraction = SpeakerExtraction(model_dir=model_dir, devices=devices,
                                                     save_intermediate=save_intermediate,
                                                     settings=modules_config['speaker_embeddings'],
-                                                    force_compute=force_compute_all)
-        if 'anonymizer' in modules_config['speaker_embeddings']:
-            self.speaker_anonymization = SpeakerAnonymization(vectors_dir=vectors_dir, device=devices[0],
-                                                              save_intermediate=save_intermediate,
-                                                              settings=modules_config['speaker_embeddings'],
-                                                              force_compute=force_compute_all)
-        else:
-            self.speaker_anonymization = None
+                                                    force_compute=force_compute_all,
+                                                    )
+        self.speaker_anonymization = SpeakerAnonymization(vectors_dir=vectors_dir, device=devices[0],
+                                                            save_intermediate=save_intermediate,
+                                                            settings=modules_config['speaker_embeddings'],
+                                                            force_compute=force_compute_all)
 
         # Prosody component
         if 'prosody' in modules_config:
@@ -78,11 +76,7 @@ class STTTSPipeline:
                 prosody = None
 
             # Step 2: Anonymize speaker, change prosody
-            if self.speaker_anonymization:
-                anon_embeddings = self.speaker_anonymization.anonymize_embeddings(speaker_embeddings=spk_embeddings,
-                                                                                  dataset_name=dataset_name)
-            else:
-                anon_embeddings = spk_embeddings
+            anon_embeddings = self.speaker_anonymization.anonymize_embeddings(speaker_embeddings=spk_embeddings,dataset_name=dataset_name)
 
             if self.prosody_anonymization:
                 anon_prosody = self.prosody_anonymization.anonymize_prosody(prosody=prosody)
@@ -99,13 +93,11 @@ class STTTSPipeline:
         if prepare_results:
             if self.speaker_anonymization:
                 anon_vectors_path = self.speaker_anonymization.results_dir,
-                anon_suffix = '_anon'
             else:
                 anon_vectors_path = self.speaker_extraction.results_dir
-                anon_suffix = '_res'
             now = datetime.strftime(datetime.today(), '%d-%m-%y_%H:%M')
             prepare_evaluation_data(dataset_dict=datasets, anon_wav_scps=anon_wav_scps,
-                                    anon_vectors_path=anon_vectors_path, anon_suffix=anon_suffix,
+                                    anon_vectors_path=anon_vectors_path, anon_suffix=self.speaker_anonymization.suffix,
                                     output_path=self.results_dir / 'formatted_data' / now)
             save_yaml(self.config, self.results_dir / 'formatted_data' / now / 'config.yaml')
 

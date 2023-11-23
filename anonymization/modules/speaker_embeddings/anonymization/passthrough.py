@@ -1,13 +1,12 @@
-from pathlib import Path
+from .base_anon import BaseAnonymizer
 import torch
 
-
-class BaseAnonymizer:
+class Passthrough(BaseAnonymizer):
 
     def __init__(self, vec_type='xvector', device=None, **kwargs):
         # Base class for speaker embedding anonymization.
         self.vec_type = vec_type
-        self.suffix = '_anon'
+        self.suffix = '_res'
 
         if isinstance(device, torch.device):
             self.device = device
@@ -19,8 +18,9 @@ class BaseAnonymizer:
             self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     def anonymize_embeddings(self, speaker_embeddings, emb_level='spk'):
-        # Template method for anonymizing a dataset. Not implemented.
-        raise NotImplementedError('anonymize_data')
+        # no need to refer to emb_level, 
+        # as extractor also yields spk-level or utt-level.
+        return speaker_embeddings
     
     def to(self, device):
         self.device = device

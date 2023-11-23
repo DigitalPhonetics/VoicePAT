@@ -14,11 +14,21 @@ class RandomAnonymizer(BaseAnonymizer):
         super().__init__(vec_type=vec_type, device=device)
 
         self.model_name = model_name if model_name else f'random_{vec_type}'
-
+        
         if in_scale:
-            self.scaling_ranges = self._load_scaling_ranges(stats_per_dim_path=stats_per_dim_path)
+            self.stats_per_dim_path = stats_per_dim_path
         else:
-            self.scaling_ranges = None
+            self.stats_per_dim_path = None
+            self._scaling_ranges = None
+
+    @property
+    def scaling_ranges(self):
+        # defer loading of stats until they are first needed
+        # required after anonymizer initialization is delegated to HyperPyYAML
+        if self.stats_per_dim_path is not None:
+            self._scaling_ranges = self._load_scaling_ranges(stats_per_dim_path=self.stats_per_dim_path)
+            self.stats_per_dim_path = None
+        return self._scaling_ranges
 
     def anonymize_embeddings(self, speaker_embeddings, emb_level='spk'):
         if self.scaling_ranges:
