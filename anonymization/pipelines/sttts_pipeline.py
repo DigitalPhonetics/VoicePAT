@@ -30,25 +30,25 @@ class STTTSPipeline:
                                                     settings=modules_config['asr'], force_compute=force_compute_all)
 
         # Speaker component
-        self.speaker_extraction = SpeakerExtraction(model_dir=model_dir, devices=devices,
+        self.speaker_extraction = SpeakerExtraction(devices=devices,
                                                     save_intermediate=save_intermediate,
                                                     settings=modules_config['speaker_embeddings'],
-                                                    force_compute=force_compute_all,
+                                                    force_compute=force_compute,
                                                     )
         self.speaker_anonymization = SpeakerAnonymization(vectors_dir=vectors_dir, device=devices[0],
                                                             save_intermediate=save_intermediate,
                                                             settings=modules_config['speaker_embeddings'],
-                                                            force_compute=force_compute_all)
+                                                            force_compute=force_compute)
 
         # Prosody component
         if 'prosody' in modules_config:
             self.prosody_extraction = ProsodyExtraction(device=devices[0], save_intermediate=save_intermediate,
                                                         settings=modules_config['prosody'],
-                                                        force_compute=force_compute_all)
+                                                        force_compute=force_compute)
             if 'anonymizer' in modules_config['prosody']:
                 self.prosody_anonymization = ProsodyAnonymization(save_intermediate=save_intermediate,
                                                                   settings=modules_config['prosody'],
-                                                                  force_compute=force_compute_all)
+                                                                  force_compute=force_compute)
             else:
                 self.prosody_anonymization = None
         else:
@@ -57,7 +57,8 @@ class STTTSPipeline:
         # TTS component
         self.speech_synthesis = SpeechSynthesis(devices=[devices[0]], settings=modules_config['tts'],
                                                 model_dir=model_dir, save_output=config.get('save_output', True),
-                                                force_compute=force_compute_all)
+                                                force_compute=force_compute,
+                                                )
 
     def run_anonymization_pipeline(self, datasets, prepare_results=True):
         anon_wav_scps = {}
@@ -92,7 +93,7 @@ class STTTSPipeline:
 
         if prepare_results:
             if self.speaker_anonymization:
-                anon_vectors_path = self.speaker_anonymization.results_dir,
+                anon_vectors_path = self.speaker_anonymization.results_dir
             else:
                 anon_vectors_path = self.speaker_extraction.results_dir
             now = datetime.strftime(datetime.today(), '%d-%m-%y_%H:%M')

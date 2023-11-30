@@ -32,8 +32,8 @@ class ASV:
             self.plda_anon = None
 
         self.extractor = SpeakerExtraction(results_dir=self.score_save_dir / 'emb_xvect',
-                                           model_dir=model_dir, devices=[self.device],
-                                           settings={'vec_type': vec_type, 'emb_level': 'utt'})
+                                           devices=[self.device],
+                                           settings={'vec_type': vec_type, 'emb_level': 'utt', 'embed_model_path': model_dir})
 
     def compute_trial_scores(self, trials, enrol_indices, test_indices, out_file, sim_scores):
         scores = []
