@@ -1,14 +1,13 @@
 root_dir : ..
-data_dir: !ref <root_dir>/data  # TODO adjust path
+data_dir: !new:utils.config_primitives.Todo  # TODO adjust path, e.g. <root_dir>/data
 save_intermediate: true
 save_output: true
 
-results_dir: !ref <root_dir>/results # TODO adjust path
-models_dir:  !ref <root_dir>/models # TODO adjust path
+results_dir: !new:utils.config_primitives.Todo # TODO adjust path, e.g. <root_dir>/results
+models_dir:  !new:utils.config_primitives.Todo  # TODO adjust path, e.g. <root_dir>/models
 vectors_dir: !ref <root_dir>/results/original_speaker_embeddings
 
 force_compute_all: false
-save_intermediate: true
 datasets: !include:datasets_vpc2022_official.yaml
 
 pipeline: sttts
