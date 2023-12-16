@@ -51,7 +51,7 @@ privacy:
     training:
       anon: false  # true or false, depending on whether the training data for the ASV is anonymized or original
       train_data_dir: !ref <utility[asr][libri_dir]>/LibriSpeech/train-clean-360  # path to original or anonymized training data for ASV
-      train_config: evaluation/privacy/asv_train/hparams/train_ecapa_tdnn_small.yaml
+      train_config: evaluation/privacy/asv/asv_train/hparams/train_ecapa_tdnn_small.yaml
       finetuning: false # true (ft) or false (scratch)
       pretrained_model: null  # path to pretrained model, only used for finetuning
       lr: 0.01
