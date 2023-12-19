@@ -3,6 +3,7 @@ import os
 from argparse import ArgumentParser
 from pathlib import Path
 import pandas as pd
+from typing import List
 
 parser = ArgumentParser()
 parser.add_argument('--config', default='config_eval.yaml')
@@ -210,15 +211,16 @@ def gvd_eval(eval_datasets, eval_data_dir, params, device, anon_data_suffix):
         print(f'{trial} gvd={gvd_value}')
 
 
-def asr_train(params, libri_dir, model_name, model_dir, anon_data_suffix):
+def asr_train(params: dict, libri_dir: Path, model_name: str, model_dir: Path, anon_data_suffix: str):
     print(f'Train ASR model: {model_dir}')
     exp_dir = Path('exp', model_name)
+    libri_dir = Path(libri_dir).expanduser() # could be relative to userdir
     ngpu = min(params.get('num_gpus', 0), torch.cuda.device_count())  # cannot use more gpus than available
 
     train_params = [
         '--lang', 'en',
         '--ngpu', str(ngpu),
-        '--expdir', str(exp_dir),
+        '--expdir', str(exp_dir.absolute()),
         '--use_lm', 'false',
         '--nbpe', '5000',
         '--num_utt', str(params['num_utt']),
@@ -233,11 +235,11 @@ def asr_train(params, libri_dir, model_name, model_dir, anon_data_suffix):
     asr_config = 'conf/train_asr_transformer.yaml'
 
     if params.get('anon', False):
-        local_data_opts = ' '.join([str(libri_dir), str(params['train_data_dir']), anon_data_suffix])
+        local_data_opts = ' '.join([str(libri_dir.absolute()), str(params['train_data_dir'].absolute()), anon_data_suffix])
         train_set = f'train_clean_360_{anon_data_suffix}'
         if params.get('finetuning', False) is True:
             asr_config = 'conf/train_asr_transformer_anon.yaml'
-            train_params.extend(['--pretrained_model', f'{str(params["pretrained_model"])}/valid.acc.ave.pth'])
+            train_params.extend(['--pretrained_model', f'{str(params["pretrained_model"].absolute())}/valid.acc.ave.pth'])
     else:
         local_data_opts = str(libri_dir)
         train_set = 'train_clean_360'
@@ -255,20 +257,20 @@ def asr_train(params, libri_dir, model_name, model_dir, anon_data_suffix):
     os.chdir(cwd)
 
 
-def asr_eval_sh(eval_datasets, eval_data_dir, params, model_path, libri_dir, anon_data_suffix):
+def asr_eval_sh(eval_datasets: List[str], eval_data_dir: Path, params, model_path, libri_dir, anon_data_suffix):
     print(f'Use ASR model for evaluation: {model_path}')
     test_sets = []
 
     for asr_dataset in eval_datasets:
         anon_asr_dataset = f'{asr_dataset}_{anon_data_suffix}'
-        test_sets.append(str(eval_data_dir / asr_dataset))
-        test_sets.append(str(eval_data_dir / anon_asr_dataset))
+        test_sets.append(str((eval_data_dir / asr_dataset).absolute()))
+        test_sets.append(str((eval_data_dir / anon_asr_dataset).absolute()))
 
     ngpu = min(params.get('num_gpus', 0), torch.cuda.device_count())  # cannot use more gpus than available
 
     inference_params = [
         '--ngpu', str(ngpu),
-        '--expdir', str(model_path),
+        '--expdir', str(model_path.absolute()),
         '--asr_exp', str(model_path),
         '--use_lm', 'true',
         '--local_data_opts', str(libri_dir),
@@ -298,6 +300,9 @@ if __name__ == '__main__':
     eval_data_asr = get_eval_asr_datasets(params['datasets'])
     eval_data_dir = params['eval_data_dir']
     anon_suffix = params['anon_data_suffix']
+
+    # make sure given paths exist
+    assert eval_data_dir.exists(), f'{eval_data_dir} does not exist'
 
     if 'privacy' in eval_steps:
         if 'asv' in eval_steps['privacy']:
