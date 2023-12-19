@@ -44,10 +44,7 @@ class SpeakerExtraction:
             'model_path': self.embed_model_path,
         }
 
-        if self.n_processes > 1:
-            self.extractors = None
-        else:
-            self.extractors = create_extractors(hparams=self.model_hparams, device=self.devices[0])
+        self.extractors = [create_extractors(hparams=self.model_hparams, device=device) for device, process in zip(cycle(devices), range(n_processes*len(devices)))]
 
     def extract_speakers(self, dataset_path, dataset_name=None, emb_level=None):
         dataset_name = dataset_name if dataset_name is not None else dataset_path.name

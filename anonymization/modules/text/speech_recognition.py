@@ -33,11 +33,8 @@ class SpeechRecognition:
             if self.save_intermediate:
                 raise ValueError('Results dir must be specified in parameters or settings!')
 
-        self.asr_model = create_model_instance(hparams=self.model_hparams, device=devices[0])
-        self.is_phones = (self.asr_model.output == 'phones')
-
-        if self.n_processes > 1:
-            self.asr_model = None
+        self.asr_models = [create_model_instance(hparams=self.model_hparams, device=device) for device, process in zip(cycle(devices), range(n_processes*len(devices)))]
+        self.is_phones = (self.asr_models[0].output == 'phones')
 
     def recognize_speech(self, dataset_path, dataset_name=None, utterance_list=None):
         dataset_name = dataset_name if dataset_name else dataset_path.name
