@@ -40,7 +40,6 @@ class MyDataset(Dataset):
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 #asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-transformer-transformerlm-librispeech", savedir="pretrained_models/asr-transformer-transformerlm-librispeech",run_opts={"device":device})
 asr_model = EncoderDecoderASR.from_hparams(source="speechbrain/asr-wav2vec2-commonvoice-en", savedir="pretrained_models/asr-wav2vec2-commonvoice-en", run_opts={"device": device})
-#devlist = "/home/smg/zengchang/work_xx/VoicePAT/data/libri_dev_enrolls/wav.scp"
 devlist = sys.argv[1]
 devset = MyDataset(devlist)
 devloader = DataLoader(devset, batch_size=16, shuffle=False, num_workers=2, collate_fn=devset.collate_fn)
