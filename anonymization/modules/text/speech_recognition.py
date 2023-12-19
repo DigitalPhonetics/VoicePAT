@@ -71,7 +71,7 @@ class SpeechRecognition:
             start = time.time()
 
             if self.n_processes == 1:
-                new_texts = [recognition_job([utterances, self.asr_model,
+                new_texts = [recognition_job([utterances, self.asr_models[0],
                                              dataset_results_dir, 0, self.devices[0], self.model_hparams, None,
                                              save_intermediate])]
             else:
@@ -79,7 +79,7 @@ class SpeechRecognition:
                 indices = np.array_split(np.arange(len(utterances)), self.n_processes)
                 utterance_jobs = [[utterances[ind] for ind in chunk] for chunk in indices]
                 # multiprocessing
-                job_params = zip(utterance_jobs, repeat(self.asr_model), repeat(dataset_results_dir), sleeps,
+                job_params = zip(utterance_jobs, repeat(self.asr_models), repeat(dataset_results_dir), sleeps,
                                  self.devices, repeat(self.model_hparams), list(range(self.n_processes)),
                                  repeat(save_intermediate))
                 new_texts = process_map(recognition_job, job_params, max_workers=self.n_processes)
@@ -126,9 +126,6 @@ def recognition_job(data):
 
     add_suffix = f'_{job_id}' if job_id is not None else None
     job_id = job_id or 0
-
-    if asr_model is None:
-        asr_model = create_model_instance(hparams=model_hparams, device=device)
 
     texts = Text(is_phones=(asr_model.output == 'phones'))
     i = 0
