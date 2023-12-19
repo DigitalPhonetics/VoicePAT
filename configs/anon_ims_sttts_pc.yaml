@@ -1,10 +1,10 @@
 root_dir : ..
-data_dir: !new:utils.config_primitives.Todo  # TODO adjust path, e.g. <root_dir>/data
+data_dir: !PLACEHOLDER
 save_intermediate: true
 save_output: true
 
-results_dir: !new:utils.config_primitives.Todo # TODO adjust path, e.g. <root_dir>/results
-models_dir:  !new:utils.config_primitives.Todo  # TODO adjust path, e.g. <root_dir>/models
+results_dir: !PLACEHOLDER # TODO adjust path, e.g. <root_dir>/results
+models_dir:  !PLACEHOLDER  # TODO adjust path, e.g. <root_dir>/models
 vectors_dir: !ref <root_dir>/results/original_speaker_embeddings
 
 force_compute_all: false

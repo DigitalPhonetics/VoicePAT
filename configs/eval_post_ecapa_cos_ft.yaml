@@ -72,7 +72,7 @@ privacy:
 
 utility:
   asr:
-    libri_dir: TODO  # path to parent dir of original LibriSpeech for data preparation, needs the structure <libri_dir>/LibriSpeech/LICENSE.TXT etc.
+    libri_dir: !PLACEHOLDER  # path to parent dir of original LibriSpeech for data preparation, needs the structure <libri_dir>/LibriSpeech/LICENSE.TXT etc.
     model_name: asr_anon_ft  # name for ASR model
     model_dir: !ref <exp_dir>/<utility[asr][model_name]>  # path to existing ASR model or output for trained ASR model
 
