@@ -28,6 +28,6 @@ if __name__ == '__main__':
     else:
         devices.append(torch.device('cpu'))
 
-    pipeline = PIPELINES[config['pipeline']](config=config, force_compute_all=args.force_compute, devices=devices)
-    pipeline.run_anonymization_pipeline(datasets)
-
+    with torch.no_grad():
+        pipeline = PIPELINES[config['pipeline']](config=config, force_compute=args.force_compute, devices=devices)
+        pipeline.run_anonymization_pipeline(datasets)
