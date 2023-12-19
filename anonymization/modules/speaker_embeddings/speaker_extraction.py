@@ -5,7 +5,7 @@ import torchaudio
 from tqdm.contrib.concurrent import process_map
 import time
 from torch.multiprocessing import set_start_method
-from itertools import repeat
+from itertools import repeat, cycle
 import numpy as np
 
 from .extraction.embedding_methods import SpeechBrainVectors, StyleEmbeddings
@@ -44,7 +44,7 @@ class SpeakerExtraction:
             'model_path': self.embed_model_path,
         }
 
-        self.extractors = [create_extractors(hparams=self.model_hparams, device=device) for device, process in zip(cycle(devices), range(n_processes*len(devices)))]
+        self.extractors = [create_extractors(hparams=self.model_hparams, device=device) for device, process in zip(cycle(devices), range(len(devices)))]
 
     def extract_speakers(self, dataset_path, dataset_name=None, emb_level=None):
         dataset_name = dataset_name if dataset_name is not None else dataset_path.name
