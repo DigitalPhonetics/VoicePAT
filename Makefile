@@ -17,10 +17,10 @@ endif
 ##@ INSTALLATION
 ###############################
 
-install: $(ENV_NAME) ## performs the installation. Currently the only step is to install the conda environment
-
-espnet: ## installs ESPNet
-	echo Deactivated
+install: $(ENV_NAME) espnet ## performs the installation. Currently the only step is to install the conda environment
+	@git clone https://github.com/egaznep/sctk
+	@conda build sctk
+	@conda install --use-local sctk
 
 uninstall:
 	@rm -rf $(ENV_NAME)
