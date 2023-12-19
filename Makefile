@@ -34,14 +34,18 @@ pretrained_models: ## downloads the pretrained models from IMS repositories
 	@wget -q -O models/anonymization.zip https://github.com/DigitalPhonetics/speaker-anonymization/releases/download/v2.0/anonymization.zip
 	@wget -q -O models/asr.zip https://github.com/DigitalPhonetics/speaker-anonymization/releases/download/v2.0/asr.zip
 	@wget -q -O models/tts.zip https://github.com/DigitalPhonetics/speaker-anonymization/releases/download/v2.0/tts.zip
+	@wget -q -O models/pre_eval_models.zip https://github.com/DigitalPhonetics/VoicePAT/releases/download/v1/pre_eval_models.zip
 	@unzip -oq models/asr.zip -d models
 	@unzip -oq models/tts.zip -d models
 	@unzip -oq models/anonymization.zip -d models
+	@unzip -oq models/pre_eval_models.zip -d models
+	@mkdir evaluation/utility/asr/exp
+	@ln -srf evaluation/utility/asr/exp exp
 	@rm models/*.zip
 
 
 $(ENV_NAME): environment.yaml
-	@($(CONDA) env create -f $< -p ./$@ && @echo Installation complete, please run `conda-develop .` once.) || $(CONDA) env update -f $< -p ./$@
+	@($(CONDA) env create -f $< -p ./$@ && echo Installation complete, please run `conda develop .` once.) || $(CONDA) env update -f $< -p ./$@
 	@conda config --set env_prompt '($$(basename {default_env})) '
 	@(cat .gitignore | grep -q $(ENV_NAME)) || echo $(ENV_NAME) >> .gitignore
 
