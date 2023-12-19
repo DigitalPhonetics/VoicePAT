@@ -1,7 +1,4 @@
 #!/bin/bash
-#SBATCH --gres=gpu:tesla_a100:1
-#SBATCH --time=3-00:00:00
-##SBATCH --cpus-per-gpu=2
 
 source ../VoicePAT/env.sh
 begin=$(date +%s) 
