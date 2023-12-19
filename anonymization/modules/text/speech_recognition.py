@@ -2,7 +2,7 @@ from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 import time
 from torch.multiprocessing import set_start_method
-from itertools import repeat
+from itertools import cycle, repeat
 import numpy as np
 from pathlib import Path
 
