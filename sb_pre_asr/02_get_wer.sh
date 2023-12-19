@@ -1,7 +1,7 @@
 #!/bin/sh
 
 
-ori_dir=/home/smg/zengchang/work_xx/VoicePAT
+ori_dir=../VoicePAT
 model=.
 for dset in libri_dev_asr  libri_test_asr vctk_dev_asr  vctk_test_asr; do
     echo $dset
