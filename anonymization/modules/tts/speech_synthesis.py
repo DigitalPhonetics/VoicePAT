@@ -119,7 +119,7 @@ class SpeechSynthesis:
                 with Pool(processes=num_processes) as pool:
                     job_params = zip(instances, self.tts_models, repeat(dataset_results_dir), sleeps,
                                      repeat(text_is_phones), repeat(self.save_output))
-                    new_wavs = pool.starmap(synthesis_job, job_params)
+                    new_wavs = pool.starmap(tqdm(synthesis_job), job_params)
 
                 for new_wav_dict in new_wavs:
                     wavs.update(new_wav_dict)
