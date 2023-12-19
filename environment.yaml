@@ -30,14 +30,16 @@ dependencies:
   - pyyaml
   - click
   - typer
+  - typer-cli
   - tqdm
   - openpyxl
   - librosa
   - resampy
   - python-sounddevice
-  - pytorch::pytorch-cuda  
+  - pytorch::pytorch-cuda
   - pytorch::ignite
   - pytorch::torchaudio
+  - cudatoolkit-dev
   - tensorboardx
   - tensorboard
   - optuna
