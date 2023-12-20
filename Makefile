@@ -1,7 +1,7 @@
 ###############################
 ## CONFIGURATION
 ###############################
-PHONY: install uninstall pretrained_models espnet
+PHONY: install uninstall pretrained_models
 .ONESHELL:
 
 PROJECT_NAME = voicepat
@@ -17,14 +17,10 @@ endif
 ##@ INSTALLATION
 ###############################
 
-install: $(ENV_NAME) espnet ## performs the installation. Currently the only step is to install the conda environment
-	@git clone https://github.com/egaznep/sctk
-	@conda build sctk
-	@conda install --use-local sctk
+install: $(ENV_NAME) ## performs the installation. Currently the only step is to install the conda environment
 
 uninstall:
 	@rm -rf $(ENV_NAME)
-	@rm -rf ESPNet
 	@rm -rf models/
 
 pretrained_models: ## downloads the pretrained models from IMS repositories
