@@ -78,7 +78,7 @@ class SpeakerExtraction:
                 utts = [x[1] for x in returns]
                 utts = list(np.concatenate(utts))
             else:
-                vectors, utts = extraction_job([wav_scp, self.extractors, 0, self.devices[0], self.model_hparams, 0])
+                vectors, utts = extraction_job([wav_scp, self.extractors[0], 0, self.devices[0], self.model_hparams, 0])
                 vectors = torch.stack(vectors, dim=0)
 
             speakers = [utt2spk[utt] for utt in utts]
