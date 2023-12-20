@@ -26,7 +26,7 @@ class SpeakerExtraction:
         self.force_compute = force_compute if force_compute else settings.get('force_compute_extraction', False)
 
         self.vec_type = settings['vec_type']
-        self.vec_level = settings['vec_level']
+        self.emb_level = settings['emb_level']
 
         if results_dir:
             self.results_dir = results_dir
@@ -40,7 +40,7 @@ class SpeakerExtraction:
 
         self.model_hparams = {
             'vec_type': self.vec_type,
-            'model_path': settings.get('vec_model_path') or model_dir
+            'model_path': settings.get('emb_model_path') or model_dir
         }
 
         if self.n_processes > 1:
@@ -48,15 +48,15 @@ class SpeakerExtraction:
         else:
             self.extractors = create_extractors(hparams=self.model_hparams, device=self.devices[0])
 
-    def extract_speakers(self, dataset_path, dataset_name=None, vec_level=None):
+    def extract_speakers(self, dataset_path, dataset_name=None, emb_level=None):
         dataset_name = dataset_name if dataset_name is not None else dataset_path.name
         dataset_results_dir = self.results_dir / dataset_name if self.save_intermediate else Path('')
         utt2spk = read_kaldi_format(dataset_path / 'utt2spk')
         wav_scp = read_kaldi_format(dataset_path / 'wav.scp')
         spk2gender = read_kaldi_format(dataset_path / 'spk2gender')
-        vec_level = vec_level if vec_level is not None else self.vec_level
+        emb_level = emb_level if emb_level is not None else self.emb_level
 
-        speaker_embeddings = SpeakerEmbeddings(vec_type=self.vec_type, vec_level='utt', device=self.devices[0])
+        speaker_embeddings = SpeakerEmbeddings(vec_type=self.vec_type, emb_level='utt', device=self.devices[0])
 
         if (dataset_results_dir / 'speaker_vectors.pt').exists() and not self.force_compute:
             print('No speaker extraction necessary; load existing embeddings instead...')
@@ -86,7 +86,7 @@ class SpeakerExtraction:
 
             speaker_embeddings.set_vectors(vectors=vectors, identifiers=utts, speakers=speakers, genders=genders)
 
-            if vec_level == 'spk':
+            if emb_level == 'spk':
                 speaker_embeddings = speaker_embeddings.convert_to_spk_level()
             if self.save_intermediate:
                 speaker_embeddings.save_vectors(dataset_results_dir)

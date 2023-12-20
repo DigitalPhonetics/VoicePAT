@@ -1,4 +1,4 @@
--r modules/tts/IMSToucan/requirements.txt
+-r anonymization/modules/tts/IMSToucan/requirements.txt
 numpy
 torch
 torchaudio
@@ -10,3 +10,5 @@ espnet_model_zoo
 pyyaml
 openpyxl
 seaborn
+transformers
+noisereduce

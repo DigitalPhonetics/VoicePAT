@@ -83,7 +83,7 @@ def _transform_paths(yaml_dict):
             continue 
         if isinstance(value, dict):
             yaml_dict[key] = _transform_paths(value)
-        elif any(tag in key for tag in path_tags):
+        elif any(tag in key for tag in path_tags) and value is not None:
             yaml_dict[key] = Path(value)
     return yaml_dict
 

@@ -1,5 +1,6 @@
 from pathlib import Path
 from datetime import datetime
+import time
 
 from anonymization.modules import SpeechRecognition, SpeechSynthesis, ProsodyExtraction, ProsodyAnonymization, SpeakerExtraction, \
     SpeakerAnonymization
@@ -15,6 +16,7 @@ class STTTSPipeline:
     """
 
     def __init__(self, config, force_compute_all, devices):
+        self.total_start_time = time.time()
         self.config = config
         model_dir = Path(config.get('models_dir', 'models'))
         vectors_dir = Path(config.get('vectors_dir', 'original_speaker_embeddings'))
@@ -67,33 +69,46 @@ class STTTSPipeline:
         for i, (dataset_name, dataset_path) in enumerate(datasets.items()):
             print(f'{i + 1}/{len(datasets)}: Processing {dataset_name}...')
             # Step 1: Recognize speech, extract speaker embeddings, extract prosody
+            start_time = time.time()
             texts = self.speech_recognition.recognize_speech(dataset_path=dataset_path, dataset_name=dataset_name)
+            print("--- Speech recognition time: %f min ---" % (float(time.time() - start_time) / 60))
+
+            start_time = time.time()
             spk_embeddings = self.speaker_extraction.extract_speakers(dataset_path=dataset_path,
                                                                       dataset_name=dataset_name)
+            print("--- Speaker extraction time: %f min ---" % (float(time.time() - start_time) / 60))
 
             if self.prosody_extraction:
+                start_time = time.time()
                 prosody = self.prosody_extraction.extract_prosody(dataset_path=dataset_path, dataset_name=dataset_name,
                                                                   texts=texts)
+                print("--- Prosody extraction time: %f min ---" % (float(time.time() - start_time) / 60))
             else:
                 prosody = None
 
             # Step 2: Anonymize speaker, change prosody
             if self.speaker_anonymization:
+                start_time = time.time()
                 anon_embeddings = self.speaker_anonymization.anonymize_embeddings(speaker_embeddings=spk_embeddings,
                                                                                   dataset_name=dataset_name)
+                print("--- Speaker anonymization time: %f min ---" % (float(time.time() - start_time) / 60))
             else:
                 anon_embeddings = spk_embeddings
 
             if self.prosody_anonymization:
+                start_time = time.time()
                 anon_prosody = self.prosody_anonymization.anonymize_prosody(prosody=prosody)
+                print("--- Prosody anonymization time: %f min ---" % (float(time.time() - start_time) / 60))
             else:
                 anon_prosody = prosody
 
             # Step 3: Synthesize
+            start_time = time.time()
             wav_scp = self.speech_synthesis.synthesize_speech(dataset_name=dataset_name, texts=texts,
                                                               speaker_embeddings=anon_embeddings,
-                                                              prosody=anon_prosody, emb_level=anon_embeddings.vec_level)
+                                                              prosody=anon_prosody, emb_level=anon_embeddings.emb_level)
             anon_wav_scps[dataset_name] = wav_scp
+            print("--- Synthesis time: %f min ---" % (float(time.time() - start_time) / 60))
             print('Done')
 
         if prepare_results:
@@ -108,5 +123,7 @@ class STTTSPipeline:
                                     anon_vectors_path=anon_vectors_path, anon_suffix=anon_suffix,
                                     output_path=self.results_dir / 'formatted_data' / now)
             save_yaml(self.config, self.results_dir / 'formatted_data' / now / 'config.yaml')
+
+            print("--- Total computation time: %f min ---" % (float(time.time() - self.total_start_time) / 60))
 
         return anon_wav_scps

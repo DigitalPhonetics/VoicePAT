@@ -7,9 +7,9 @@ from utils import read_kaldi_format, save_kaldi_format, create_clean_dir
 
 class SpeakerEmbeddings:
 
-    def __init__(self, vec_type='xvector', vec_level='spk', device=torch.device('cpu')):
+    def __init__(self, vec_type='xvector', emb_level='spk', device=torch.device('cpu')):
         self.vec_type = vec_type
-        self.vec_level = vec_level
+        self.emb_level = emb_level
         self.device = device
 
         self.identifiers2idx = {}
@@ -120,7 +120,7 @@ class SpeakerEmbeddings:
         return {speaker: gender for speaker, gender in zip(self.original_speakers, self.genders)}
 
     def convert_to_spk_level(self, method='average'):
-        assert self.vec_level == 'utt', \
+        assert self.emb_level == 'utt', \
             'Speaker embeddings must be on utterance level to be able to convert them to speaker level!'
 
         if method == 'average':
@@ -128,7 +128,7 @@ class SpeakerEmbeddings:
             for i, speaker in enumerate(self.original_speakers):
                 spk2idx[speaker].append(i)
 
-            spk_level_embeddings = SpeakerEmbeddings(vec_type=self.vec_type, vec_level='spk', device=self.device)
+            spk_level_embeddings = SpeakerEmbeddings(vec_type=self.vec_type, emb_level='spk', device=self.device)
             spk_vectors, speakers, genders = [], [], []
             if not isinstance(self.vectors, torch.Tensor):
                 self.vectors = torch.tensor(self.vectors)

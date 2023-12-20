@@ -15,7 +15,7 @@ pyworld
 scipy
 segments
 sentencepiece
-sklearn
+scikit-learn
 sounddevice
 SoundFile
 speechbrain==0.5.10

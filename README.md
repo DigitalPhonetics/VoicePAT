@@ -28,7 +28,7 @@ It is based on the framework(s) by the [VoicePrivacy Challenges](https://github.
 ## Installation
 Simply clone the repository and install the dependencies in [requirements.txt](requirements.txt). If you want to use 
 the ESPnet-based ASR evaluation model, you additionally need to clone and install [ESPNet](https://github.com/espnet/espnet/) and insert the link to 
-it in [evaluation/utility/asr/path.sh](evaluation/utility/asr/path.sh), e.g., ``MAIN_ROOT=~/espnet``.
+it in [evaluation/utility/asr/path.sh](evaluation/utility/asr/espnet_asr/path.sh), e.g., ``MAIN_ROOT=~/espnet``.
 
 ## Usage
 

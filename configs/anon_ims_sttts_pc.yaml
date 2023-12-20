@@ -28,7 +28,7 @@ datasets:
 
 results_dir: !ref <root_dir>/results # TODO adjust path
 models_dir:  !ref <root_dir>/models # TODO adjust path
-vectors_dir: !ref <root_dir>/results/original_speaker_embeddings
+vectors_dir: !ref <results_dir>/original_speaker_embeddings
 pipeline: sttts
 
 modules:
@@ -46,12 +46,12 @@ modules:
     force_compute_extraction: false
     force_compute_anonymization: false
     vec_type: style-embed
-    embed_model_path: !ref <models_dir>/tts/Embedding/embedding_function.pt
+    emb_model_path: !ref <models_dir>/tts/Embedding/embedding_function.pt
     emb_level: spk   # possible: spk, utt
     anon_method: gan   # possible: pool, random
     anon_name: gan_style-embed
-    extraction_results_path: !ref <results_dir>/original_speaker_embeddings/<modules[speaker_embeddings][vec_type]>_<modules[speaker_embeddings][vec_level]>-level
-    anon_results_path: !ref <results_dir>/anon_speaker_embeddings/<modules[speaker_embeddings][vec_type]>_<modules[speaker_embeddings][vec_level]>-level
+    extraction_results_path: !ref <results_dir>/original_speaker_embeddings/<modules[speaker_embeddings][vec_type]>_<modules[speaker_embeddings][emb_level]>-level
+    anon_results_path: !ref <results_dir>/anon_speaker_embeddings/<modules[speaker_embeddings][vec_type]>_<modules[speaker_embeddings][emb_level]>-level
 
     # pool_anon_settings are only used if anon_method == pool
     pool_anon_settings:
