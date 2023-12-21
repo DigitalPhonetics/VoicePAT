@@ -8,7 +8,8 @@ models_dir:  !PLACEHOLDER  # TODO adjust path, e.g. <root_dir>/models
 vectors_dir: !ref <root_dir>/results/original_speaker_embeddings
 
 force_compute_all: false
-datasets: !include:datasets_vpc2022_official.yaml
+save_intermediate: true
+datasets: !include:datasets_vpc2022_official_anon.yaml
 
 pipeline: sttts
 

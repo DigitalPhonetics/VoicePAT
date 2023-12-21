@@ -1,37 +1,7 @@
 root_dir: .
 exp_dir: !ref <root_dir>/exp
 
-datasets:
-  - name: libri_dev
-    data: libri
-    set: dev
-    enrolls: [enrolls]
-    trials: [trials_f, trials_m]
-  - name: libri_test
-    data: libri
-    set: test
-    enrolls: [enrolls]
-    trials: [trials_f, trials_m]
-  - name: vctk_dev
-    data: vctk
-    set: dev
-    enrolls: [enrolls]
-    trials: [trials_f, trials_m]
-  - name: vctk_dev_common
-    data: vctk
-    set: dev
-    enrolls: [enrolls]
-    trials: [trials_f_common, trials_m_common]
-  - name: vctk_test
-    data: vctk
-    set: test
-    enrolls: [enrolls]
-    trials: [trials_f, trials_m]
-  - name: vctk_test_common
-    data: vctk
-    set: test
-    enrolls: [enrolls]
-    trials: [trials_f_common, trials_m_common]
+datasets: !include:datasets_vpc2022_official_eval.yaml
 
 eval_steps:  # all metrics in this list will be computed in the evaluation. Remove entry to skip
   privacy:

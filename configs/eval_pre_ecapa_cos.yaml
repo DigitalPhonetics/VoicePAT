@@ -1,17 +1,17 @@
 root_dir: .
 exp_dir: !ref <root_dir>/exp
 
-datasets: !include:datasets_vpc2022_official.yaml
+datasets: !include:datasets_vpc2022_official_eval.yaml
 
 eval_steps:  # all metrics in this list will be computed in the evaluation. Remove entry to skip
   privacy:
     - asv
   utility:
     - asr
-    - gvd
+    # - gvd
 
-anon_data_suffix: anon  # suffix for dataset to signal that it is anonymized
-eval_data_dir: !PLACEHOLDER  # path to anonymized evaluation data in kaldi format, e.g. <eval_data_dir>/libri_test_enrolls/wav.scp etc.
+anon_data_suffix: res  # suffix for dataset to signal that it is anonymized
+eval_data_dir: results/formatted_data/26-11-23_21:40/  # path to anonymized evaluation data in kaldi format, e.g. <eval_data_dir>/libri_test_enrolls/wav.scp etc.
 
 privacy:
   asv:
@@ -42,7 +42,7 @@ privacy:
 
 utility:
   asr:
-    libri_dir: !PLACEHOLDER  # path to parent dir of original LibriSpeech for data preparation, needs the structure <libri_dir>/LibriSpeech/LICENSE.TXT etc.
+    libri_dir: ~/Projects/2022-voiceprivacychallenge/baseline/corpora/  # path to parent dir of original LibriSpeech for data preparation, needs the structure <libri_dir>/LibriSpeech/LICENSE.TXT etc.
     model_name: asr_pre  # name for ASR model
     model_dir: !ref <exp_dir>/<utility[asr][model_name]>  # path to existing ASR model or output for trained ASR model
 
