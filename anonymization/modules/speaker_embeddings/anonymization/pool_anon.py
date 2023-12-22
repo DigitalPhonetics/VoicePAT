@@ -105,8 +105,11 @@ class PoolAnonymizer(BaseAnonymizer):
             suffix (str): Suffix to append to the output folder names.
 
         """
-        print(locals())
-        super().__init__(vec_type=vec_type, device=device, suffix=suffix)
+        # filter out kwargs that are not used in this class
+        kwargs = locals()
+        kwargs.pop("self")
+        kwargs.pop("__class__")
+        super().__init__(**kwargs)
 
         self.model_name = model_name if model_name else f"pool_{vec_type}"
 
