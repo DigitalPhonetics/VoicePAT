@@ -1,8 +1,10 @@
 import torch
 import resampy
+import logging
 
 from .IMSToucan.InferenceInterfaces.AnonFastSpeech2 import AnonFastSpeech2
 
+logger = logging.getLogger(__name__)
 
 class ImsTTS:
 
@@ -36,7 +38,7 @@ class ImsTTS:
             if i > 30:
                 break
         if i > 0:
-            print(f'Synthesized utt in {i} takes')
+            logger.info(f'Synthesized utt in {i} takes')
 
         # start and end silence are computed for 16000, so we have to adapt this to different output sr
         factor = self.output_sr // 16000

@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 import torch
 import numpy as np
@@ -10,6 +11,7 @@ from .base_anon import BaseAnonymizer
 from ..speaker_embeddings import SpeakerEmbeddings
 from .utils.WGAN import EmbeddingsGenerator
 
+logger = logging.getLogger(__name__)
 
 class GANAnonymizer(BaseAnonymizer):
     """
@@ -84,9 +86,9 @@ class GANAnonymizer(BaseAnonymizer):
                 or 'utt' for utterance level).
         """
         if emb_level == "spk":
-            print(f"Anonymize embeddings of {len(speaker_embeddings)} speakers...")
+            logger.info(f"Anonymize embeddings of {len(speaker_embeddings)} speakers...")
         elif emb_level == "utt":
-            print(f"Anonymize embeddings of {len(speaker_embeddings)} utterances...")
+            logger.info(f"Anonymize embeddings of {len(speaker_embeddings)} utterances...")
 
         identifiers = []
         speakers = []
@@ -117,7 +119,7 @@ class GANAnonymizer(BaseAnonymizer):
         return anon_embeddings
 
     def _generate_artificial_embeddings(self, gan_model_path: Path, n: int):
-        print(f"Generate {n} artificial speaker embeddings...")
+        logger.info(f"Generate {n} artificial speaker embeddings...")
         generator = EmbeddingsGenerator(gan_path=gan_model_path, device=self.device)
         gan_vectors = generator.generate_embeddings(n=n)
         unused_indices = np.arange(len(gan_vectors))

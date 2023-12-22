@@ -1,3 +1,4 @@
+import logging
 from tqdm import tqdm
 from pathlib import Path
 import torch
@@ -14,7 +15,7 @@ from .speaker_embeddings import SpeakerEmbeddings
 from utils import read_kaldi_format
 
 set_start_method('spawn', force=True)
-
+logger = logging.getLogger(__name__)
 
 class SpeakerExtraction:
 
@@ -57,12 +58,12 @@ class SpeakerExtraction:
         speaker_embeddings = SpeakerEmbeddings(vec_type=self.vec_type, emb_level='utt', device=self.devices[0])
 
         if (dataset_results_dir / 'speaker_vectors.pt').exists() and not self.force_compute:
-            print('No speaker extraction necessary; load existing embeddings instead...')
+            logger.info('No speaker extraction necessary; load existing embeddings instead...')
             speaker_embeddings.load_vectors(dataset_results_dir)
             # assume the loaded vectors are computed according to the setting in config
             speaker_embeddings.emb_level = emb_level
         else:
-            print(f'Extract embeddings of {len(wav_scp)} utterances')
+            logger.info(f'Extract embeddings of {len(wav_scp)} utterances')
             speaker_embeddings.new = True
 
             if self.n_processes > 1:
@@ -126,7 +127,7 @@ def extraction_job(data):
         try:
             spk_embs = [extractor.extract_vector(audio=norm_wave, sr=fs) for extractor in speaker_extractors]
         except RuntimeError as e:
-            print(f'Runtime error: {utt}, {signal.shape}, {norm_wave.shape}')
+            logger.warn(f'Runtime error: {utt}, {signal.shape}, {norm_wave.shape}')
             continue
 
         if len(spk_embs) == 1:

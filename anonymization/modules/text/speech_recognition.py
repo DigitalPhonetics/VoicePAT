@@ -1,6 +1,7 @@
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 import time
+import logging
 from torch.multiprocessing import set_start_method
 from itertools import cycle, repeat
 import numpy as np
@@ -11,7 +12,7 @@ from .recognition.ims_asr import ImsASR
 from utils import read_kaldi_format
 
 set_start_method('spawn', force=True)
-
+logger = logging.getLogger(__name__)
 
 class SpeechRecognition:
 
@@ -49,13 +50,13 @@ class SpeechRecognition:
             texts.load_text(in_dir=dataset_results_dir)
 
         if len(texts) == len(utt2spk):
-            print('No speech recognition necessary; load existing text instead...')
+            logger.info('No speech recognition necessary; load existing text instead...')
         else:
             if len(texts) > 0:
-                print(f'No speech recognition necessary for {len(texts)} of {len(utt2spk)} utterances')
+                logger.info(f'No speech recognition necessary for {len(texts)} of {len(utt2spk)} utterances')
             # otherwise, recognize the speech
             dataset_results_dir.mkdir(exist_ok=True, parents=True)
-            print(f'Recognize speech of {len(utt2spk)} utterances...')
+            logger.info(f'Recognize speech of {len(utt2spk)} utterances...')
             wav_scp = read_kaldi_format(dataset_path / 'wav.scp')
 
             utterances = []
@@ -86,7 +87,7 @@ class SpeechRecognition:
 
             end = time.time()
             total_time = round(end - start, 2)
-            print(f'Total time for speech recognition: {total_time} seconds ({round(total_time / 60, 2)} minutes / '
+            logger.info(f'Total time for speech recognition: {total_time} seconds ({round(total_time / 60, 2)} minutes / '
                   f'{round(total_time / 60 / 60, 2)} hours)')
             texts = self._combine_texts(main_text_instance=texts, additional_text_instances=new_texts)
 

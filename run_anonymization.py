@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from argparse import ArgumentParser
 import torch
@@ -29,5 +30,7 @@ if __name__ == '__main__':
         devices.append(torch.device('cpu'))
 
     with torch.no_grad():
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s- %(levelname)s - %(message)s')
+        logging.info(f'Running pipeline: {config["pipeline"]}')
         pipeline = PIPELINES[config['pipeline']](config=config, force_compute=args.force_compute, devices=devices)
         pipeline.run_anonymization_pipeline(datasets)

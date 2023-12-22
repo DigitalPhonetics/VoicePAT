@@ -1,9 +1,11 @@
 # This code is based on the descriptions in https://github.com/speechbrain/speechbrain/blob/develop/speechbrain/processing/PLDA_LDA.py
+import logging
 from pathlib import Path
 from speechbrain.processing.PLDA_LDA import PLDA, StatObject_SB, Ndx, fast_PLDA_scoring
 import numpy as np
 import torch
 
+logger = logging.getLogger(__name__)
 class PLDAModel:
 
     def __init__(self, train_embeddings, results_path: Path=None, save_plda=True):
@@ -64,13 +66,13 @@ class PLDAModel:
         vectors = train_embeddings.vectors.to(torch.float64)
 
         modelset = np.array([f'md{speaker}' for speaker in train_embeddings.original_speakers], dtype="|O")
-        print(len(modelset), len(set(modelset)))
+        logger.debug(len(modelset), len(set(modelset)))
         segset, s, stat0 = self._get_vector_stats(vectors, sg_tag='sg', utt_ids=train_embeddings.get_utt_list())
 
         xvectors_stat = StatObject_SB(modelset=modelset, segset=segset, start=s, stop=s, stat0=stat0,
                                       stat1=vectors.cpu().numpy())
 
-        print(vectors.shape)
+        logger.debug(vectors.shape)
 
         plda = PLDA(rank_f=100)
         plda.plda(xvectors_stat)

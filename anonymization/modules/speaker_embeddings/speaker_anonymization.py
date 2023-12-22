@@ -1,8 +1,10 @@
+import logging
 from pathlib import Path
 
 from .anonymization.base_anon import BaseAnonymizer
 from .speaker_embeddings import SpeakerEmbeddings
 
+logger = logging.getLogger(__name__)
 
 class SpeakerAnonymization:
 
@@ -38,14 +40,14 @@ class SpeakerAnonymization:
                 self.force_compute:
             # if there are already anonymized speaker embeddings from this model and the computation is not forced,
             # simply load them
-            print('No computation of anonymized embeddings necessary; load existing anonymized speaker embeddings '
+            logger.info('No computation of anonymized embeddings necessary; load existing anonymized speaker embeddings '
                   'instead...')
             anon_embeddings = SpeakerEmbeddings(vec_type=self.vec_type, emb_level=self.emb_level, device=self.device)
             anon_embeddings.load_vectors(dataset_results_dir)
             return anon_embeddings
         else:
             # otherwise, create new anonymized speaker embeddings
-            print('Anonymize speaker embeddings...')
+            logger.info('Anonymize speaker embeddings...')
             anon_embeddings = self.anonymizer.anonymize_embeddings(speaker_embeddings, emb_level=self.emb_level)
 
             if self.save_intermediate:
@@ -58,5 +60,5 @@ class SpeakerAnonymization:
             'The anonymizer must be an instance of BaseAnonymizer, or a ' \
             f'subclass of it, but received an instance of {type(anon_method)}'
             
-        print(f'Model type of anonymizer: {type(anon_method).__name__}')
+        logger.info(f'Model type of anonymizer: {type(anon_method).__name__}')
         return anon_method

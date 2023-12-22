@@ -180,7 +180,7 @@ def _get_utt_split_lists(
     train_lst = []
     dev_lst = []
 
-    print("Getting file list...")
+    logger.debug("Getting file list...")
     for data_folder in data_folders:
         if anon:
             suffix = 'wav'
@@ -212,14 +212,14 @@ def _get_utt_split_lists(
         selected_spk = {}
         #select the number of speakers
         if num_spk != 'ALL':
-            print("selected %s speakers for training"%num_spk)
+            logger.debug("selected %s speakers for training"%num_spk)
             selected_spks_pure = random.sample(spks_pure,int(num_spk))
             for k,v in spk_files.items():
                 if k.split('-')[0] in selected_spks_pure:
                     selected_spk[k] = v
             #selected_spk = dict(random.sample(spk_files.items(), int(num_spk)))
         elif num_spk == 'ALL':
-            print("selected all speakers for training")
+            logger.debug("selected all speakers for training")
             selected_spk = spk_files
         else:
             sys.exit("invalid $utt_spk value")
@@ -228,7 +228,7 @@ def _get_utt_split_lists(
         if num_utt != 'ALL':
             # select the number of utterances for each speaker-sess-id
             if utt_selected_ways == 'spk-sess':
-                print("selected %s utterances for each selected speaker-sess-id" % num_utt)
+                logger.info("selected %s utterances for each selected speaker-sess-id" % num_utt)
                 for spk in selected_spk:
                     if len(selected_spk[spk]) >= int(num_utt):
                         selected_list.extend(random.sample(selected_spk[spk], int(num_utt)))
@@ -236,7 +236,7 @@ def _get_utt_split_lists(
                         selected_list.extend(selected_spk[spk])
 
             elif utt_selected_ways == 'spk-random':
-                print("randomly selected %s utterances for each selected speaker-id" % num_utt)
+                logger.info("randomly selected %s utterances for each selected speaker-id" % num_utt)
                 selected_spks_pure = {}
                 for k, v in selected_spk.items():
                     spk_pure = k.split('-')[0]
@@ -253,7 +253,7 @@ def _get_utt_split_lists(
                         selected_list.extend(selected_spk[spk])
 
             elif utt_selected_ways == 'spk-diverse-sess':
-                print("diversely selected %s utterances for each selected speaker-id" % num_utt)
+                logger.info("diversely selected %s utterances for each selected speaker-id" % num_utt)
                 selected_spks_pure = {}
                 for k, v in selected_spk.items():
                     spk_pure = k.split('-')[0]
@@ -273,7 +273,7 @@ def _get_utt_split_lists(
 
 
         elif num_utt == 'ALL':
-            print("selected all utterances for each selected speaker")
+            logger.info("selected all utterances for each selected speaker")
 
             for value in selected_spk.values():
                 for v in value:
@@ -297,8 +297,8 @@ def _get_utt_split_lists(
         
         full = f'Full training set:{full_utt}'
         used = f'Used for training:{len(selected_list)}'
-        print(full)
-        print(used)
+        logger.debug(full)
+        logger.debug(used)
 
         split = int(0.01 * split_ratio[0] * len(selected_list))
         train_snts = selected_list[:split]
@@ -417,7 +417,7 @@ def prepare_csv(seg_dur, wav_lst, csv_file, random_segment=False, amp_th=0):
                 ]
                 entry.append(csv_line)
 
-    print(f'Skipped {len(problematic_wavs)} invalid audios')
+    logger.info(f'Skipped {len(problematic_wavs)} invalid audios')
     csv_output = csv_output + entry
 
     # Writing the csv lines

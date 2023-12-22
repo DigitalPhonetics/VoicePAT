@@ -1,4 +1,5 @@
 import json
+import logging
 from pathlib import Path
 import torch
 from os import PathLike
@@ -8,6 +9,7 @@ import numpy as np
 from .base_anon import BaseAnonymizer
 from ..speaker_embeddings import SpeakerEmbeddings
 
+logger = logging.getLogger(__name__)
 
 class RandomAnonymizer(BaseAnonymizer):
     """
@@ -73,7 +75,7 @@ class RandomAnonymizer(BaseAnonymizer):
                 utterance level).
         """
         if self.scaling_ranges:
-            print("Anonymize vectors in scale!")
+            logger.debug("Anonymize vectors in scale!")
             return self._anonymize_data_in_scale(speaker_embeddings)
         else:
             identifiers = []

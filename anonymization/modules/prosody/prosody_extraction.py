@@ -1,3 +1,4 @@
+import logging
 import torch
 torch.set_num_threads(1)
 
@@ -8,6 +9,7 @@ from .prosody import Prosody
 from .extraction import *
 from utils import read_kaldi_format
 
+logger = logging.getLogger(__name__)
 
 class ProsodyExtraction:
 
@@ -47,7 +49,7 @@ class ProsodyExtraction:
             wav_scp = {utt: wav_scp[utt] for utt in unprocessed_utts}
 
         if wav_scp:
-            print(f'Extract prosody for {len(wav_scp)} of {len(wav_scp) + len(data_prosody)} utterances')
+            logger.info(f'Extract prosody for {len(wav_scp)} of {len(wav_scp) + len(data_prosody)} utterances')
             data_prosody.new = True
             i = 0
             for utt, wav_path in tqdm(wav_scp.items()):
@@ -56,7 +58,7 @@ class ProsodyExtraction:
                     utt_prosody = self.extractor.extract_prosody(transcript=text, ref_audio_path=wav_path,
                                                                  input_is_phones=text_is_phones)
                 except IndexError:
-                    print(f'Index Error for {utt}')
+                    logger.warn(f'IndexError for {utt}')
                     continue
                 duration, pitch, energy, start_silence, end_silence = utt_prosody
                 data_prosody.add_instance(utterance=utt, duration=duration, pitch=pitch, energy=energy,
@@ -69,8 +71,8 @@ class ProsodyExtraction:
                 data_prosody.save_prosody(dataset_results_dir)
 
         elif len(data_prosody.utterances) > 0:
-            print('No prosody extraction necessary; load stored values instead...')
+            logger.info('No prosody extraction necessary; load stored values instead...')
         else:
-            print(f'No utterances could be found in {dataset_path}!')
+            logger.warn(f'No utterances could be found in {dataset_path}!')
 
         return data_prosody

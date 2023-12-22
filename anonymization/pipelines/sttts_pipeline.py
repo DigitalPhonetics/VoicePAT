@@ -1,5 +1,6 @@
 from pathlib import Path
 from datetime import datetime
+import logging
 
 from anonymization.modules import (
     SpeechRecognition,
@@ -12,6 +13,7 @@ from anonymization.modules import (
 import typing
 from utils import prepare_evaluation_data, save_yaml
 
+logger = logging.getLogger(__name__)
 
 class STTTSPipeline:
     def __init__(self, config: dict, force_compute: bool, devices: list):
@@ -110,7 +112,7 @@ class STTTSPipeline:
         anon_wav_scps = {}
 
         for i, (dataset_name, dataset_path) in enumerate(datasets.items()):
-            print(f"{i + 1}/{len(datasets)}: Processing {dataset_name}...")
+            logger.info(f"{i + 1}/{len(datasets)}: Processing {dataset_name}...")
             # Step 1: Recognize speech, extract speaker embeddings, extract prosody
             texts = self.speech_recognition.recognize_speech(
                 dataset_path=dataset_path, dataset_name=dataset_name
@@ -147,9 +149,10 @@ class STTTSPipeline:
                 emb_level=anon_embeddings.emb_level,
             )
             anon_wav_scps[dataset_name] = wav_scp
-            print("Done")
+            logger.info("Anonymization pipeline completed.")
 
         if prepare_results:
+            logger.info("Preparing results according to the Kaldi format.")
             if self.speaker_anonymization:
                 anon_vectors_path = self.speaker_anonymization.results_dir
             else:
