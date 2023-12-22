@@ -47,6 +47,12 @@ class InferenceSpeechBrainASR:
                                                         hparams_file='transformer_inference.yaml',
                                                         savedir=model_path, run_opts={'device': self.device})
 
+    def plain_text_key(self, path):
+        tokens = []  # key: token_list
+        for token in path:
+            tokens.append(token.strip().split(' '))
+        return tokens
+
     def transcribe_audios_old(self, audio_paths, out_file):
         texts = {}
 
@@ -83,7 +89,7 @@ class InferenceSpeechBrainASR:
             targets.append(ref)
             predicted.append(hyp_texts[utt_id])
 
-        wer_stats.append(ids=ids, predict=predicted, target=targets)
+        wer_stats.append(ids=ids, predict=self.plain_text_key(predicted), target=self.plain_text_key(targets))
         print(f'WER jiwer: {wer(reference=targets, hypothesis=predicted)}')
         out_file.parent.mkdir(exist_ok=True, parents=True)
 
