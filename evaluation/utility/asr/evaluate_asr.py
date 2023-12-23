@@ -61,7 +61,7 @@ def asr_eval_speechbrain(eval_datasets, eval_data_dir, params, model_path, anon_
     print(f'Use ASR model for evaluation: {model_path}')
     model = InferenceSpeechBrainASR(model_url=params['model_url'], model_path=model_path, device=device)
     results_dir = params['results_dir']
-    test_sets = [f'{asr_dataset}_{anon_data_suffix}' for asr_dataset in eval_datasets] + eval_datasets
+    test_sets = eval_datasets + [f'{asr_dataset}_{anon_data_suffix}' for asr_dataset in eval_datasets]
 
 
     with torch.no_grad():
@@ -69,7 +69,7 @@ def asr_eval_speechbrain(eval_datasets, eval_data_dir, params, model_path, anon_
             print(test_set)
             data_path = eval_data_dir / test_set
             dataset = MyDataset(wav_scp_file=Path(data_path, 'wav.scp'), asr_model=model.asr_model)
-            dataloader = DataLoader(dataset, batch_size=2, shuffle=False, num_workers=1, collate_fn=dataset.collate_fn)
+            dataloader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=1, collate_fn=dataset.collate_fn)
             hypotheses = model.transcribe_audios(data=dataloader, out_file=Path(results_dir, test_set, 'text'))
             references = read_kaldi_format(Path(data_path, 'text'), values_as_string=True)
             scores = model.compute_wer(ref_texts=references, hyp_texts=hypotheses, out_file=Path(results_dir,

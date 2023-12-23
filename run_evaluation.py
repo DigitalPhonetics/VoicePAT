@@ -1,6 +1,7 @@
 # We need to set CUDA_VISIBLE_DEVICES before we import Pytorch so we will read all arguments directly on startup
 import os
 from argparse import ArgumentParser
+from collections import defaultdict
 from pathlib import Path
 
 parser = ArgumentParser()
@@ -18,7 +19,7 @@ import shutil
 import itertools
 
 from evaluation import evaluate_asv, train_asv_eval, evaluate_asr, train_asr_eval, evaluate_gvd
-from utils import parse_yaml, find_asv_model_checkpoint, scan_checkpoint
+from utils import parse_yaml, find_asv_model_checkpoint, scan_checkpoint, combine_asr_data, split_vctk_into_common_and_diverse
 
 
 def get_evaluation_steps(params):
@@ -51,11 +52,53 @@ def get_eval_trial_datasets(datasets_list):
     return eval_pairs
 
 
-def get_eval_asr_datasets(datasets_list):
+def check_vctk_split(data_trials, eval_data_dir, anon_suffix):
+    copy_files_for_orig = ['spk2utt', 'text', 'utt2spk', 'trials', 'spk2gender', 'wav.scp', 'utt2dur']
+    copy_files_for_anon = ['spk2utt', 'text', 'utt2spk', 'trials']
+    separated_data_trials = []
+
+    for enroll, trial in data_trials:
+        if 'vctk' in trial and '_all' in trial:
+            common_split = trial.replace('all', 'common')  # same sentences for all speakers
+            diverse_split = trial.replace('_all', '')  # different sentences for each speaker
+            if (not Path(eval_data_dir, common_split).exists() or \
+                    not Path(eval_data_dir, diverse_split).exists()):
+                split_vctk_into_common_and_diverse(dataset=trial, output_path=eval_data_dir, orig_data_path=eval_data_dir,
+                                                   copy_files=copy_files_for_orig, anon=False, anon_suffix=f'_{anon_suffix}',
+                                                   out_data_split=Path(eval_data_dir, trial))
+            if not Path(eval_data_dir, f'{common_split}_{anon_suffix}').exists() or \
+                not Path(eval_data_dir, f'{diverse_split}_{anon_suffix}').exists():
+                split_vctk_into_common_and_diverse(dataset=trial, output_path=eval_data_dir, orig_data_path=eval_data_dir,
+                                                   copy_files=copy_files_for_anon, anon=True, anon_suffix=f'_{anon_suffix}',
+                                                   out_data_split = Path(eval_data_dir, f'{trial}_{anon_suffix}'))
+            separated_data_trials.append((enroll, common_split))
+            separated_data_trials.append((enroll, diverse_split))
+        else:
+            separated_data_trials.append((enroll, trial))
+    return separated_data_trials
+
+
+def get_eval_asr_datasets(datasets_list, eval_data_dir, anon_suffix):
+    # combines the trial subsets (trial_f, trial_m) of each dataset into one asr dataset
     eval_data = set()
 
+    # in case one bigger dataset is divided into smaller parts (e.g. vctk_all into vctk and vctk_common) we need to
+    # collect all parts together to create one asr dataset for the whole instead of for each subpart
+    collated_datasets = defaultdict(list)
     for dataset in datasets_list:
-        eval_data.add(f'{dataset["data"]}_{dataset["set"]}_asr')
+        asr_dataset_name = f'{dataset["data"]}_{dataset["set"]}_asr'
+        collated_datasets[asr_dataset_name].append(dataset)
+
+    for asr_dataset_name, datasets in collated_datasets.items():
+        for asr_dataset in (asr_dataset_name, f'{asr_dataset_name}_{anon_suffix}'): # for orig and anon
+            if not Path(eval_data_dir / asr_dataset).exists():
+                trial_dirs = []
+                for dataset in datasets:
+                    for trial in dataset['trials']:
+                        trial_dirs.append(Path(eval_data_dir / f'{dataset["data"]}_{dataset["set"]}_{trial}'))
+                output_dir = Path(eval_data_dir / asr_dataset)
+                combine_asr_data(input_dirs=trial_dirs, output_dir=output_dir)
+        eval_data.add(asr_dataset)
 
     return list(eval_data)
 
@@ -64,11 +107,12 @@ if __name__ == '__main__':
     params = parse_yaml(Path('configs', args.config))
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-    eval_steps = get_evaluation_steps(params)
-    eval_data_trials = get_eval_trial_datasets(params['datasets'])
-    eval_data_asr = get_eval_asr_datasets(params['datasets'])
     eval_data_dir = params['eval_data_dir']
     anon_suffix = params['anon_data_suffix']
+    eval_steps = get_evaluation_steps(params)
+    eval_data_trials = get_eval_trial_datasets(params['datasets'])
+    eval_data_trials = check_vctk_split(eval_data_trials, eval_data_dir=eval_data_dir, anon_suffix=anon_suffix)
+    eval_data_asr = get_eval_asr_datasets(params['datasets'], eval_data_dir=eval_data_dir, anon_suffix=anon_suffix)
 
     if 'privacy' in eval_steps:
         if 'asv' in eval_steps['privacy']:
