@@ -98,7 +98,7 @@ def get_eval_asr_datasets(datasets_list, eval_data_dir, anon_suffix):
                         trial_dirs.append(Path(eval_data_dir / f'{dataset["data"]}_{dataset["set"]}_{trial}'))
                 output_dir = Path(eval_data_dir / asr_dataset)
                 combine_asr_data(input_dirs=trial_dirs, output_dir=output_dir)
-        eval_data.add(asr_dataset)
+        eval_data.add(asr_dataset_name)
 
     return list(eval_data)
 
