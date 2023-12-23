@@ -13,6 +13,7 @@ from ..Preprocessing.articulatory_features import get_phone_to_id
 
 
 class ArticulatoryCombinedTextFrontend:
+    _backend = None
 
     def __init__(self,
                  language,
@@ -156,11 +157,23 @@ class ArticulatoryCombinedTextFrontend:
             print("Language not supported yet")
             sys.exit()
 
-        self.phonemizer_backend = EspeakBackend(language=self.g2p_lang,
-                                                punctuation_marks=';:,.!?¡¿—…"«»“”~/。【】、‥،؟“”؛',
-                                                preserve_punctuation=True,
-                                                language_switch='remove-flags',
-                                                with_stress=self.use_stress)
+        # temporary: share the backend if config matches. this prevents multitasking.
+        if ArticulatoryCombinedTextFrontend._backend is None:
+            ArticulatoryCombinedTextFrontend._backend = EspeakBackend(language=self.g2p_lang,
+                                                                    punctuation_marks=';:,.!?¡¿—…"«»“”~/。【】、‥،؟“”؛',
+                                                                    preserve_punctuation=True,
+                                                                    language_switch='remove-flags',
+                                                                    with_stress=self.use_stress,
+                                                                    )
+        elif ArticulatoryCombinedTextFrontend._backend.language != self.g2p_lang or \
+                ArticulatoryCombinedTextFrontend._backend._with_stress != self.use_stress:
+            ArticulatoryCombinedTextFrontend._backend = EspeakBackend(language=self.g2p_lang,
+                                                                    punctuation_marks=';:,.!?¡¿—…"«»“”~/。【】、‥،؟“”؛',
+                                                                    preserve_punctuation=True,
+                                                                    language_switch='remove-flags',
+                                                                    with_stress=self.use_stress,
+                                                                    )
+        self.phonemizer_backend = ArticulatoryCombinedTextFrontend._backend
 
         self.phone_to_vector = generate_feature_table()
         self.phone_to_id = get_phone_to_id()

@@ -12,6 +12,7 @@ Description:
 """
 
 import argparse
+import logging
 import sys
 from pathlib import Path
 
@@ -19,6 +20,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
+logger = logging.getLogger(__name__)
 
 def get_parser():
     """Construct the parser."""
@@ -141,7 +143,7 @@ def plot_filtergraph(
     ax.fill_between(x, f_mins, f_maxs, color="green", alpha=0.3)
     ax.legend(loc="upper left", prop={"size": 15})
     plt.savefig(img_path, bbox_inches="tight")
-    print("Plotted %s" % img_path)
+    logger.debug("Plotted %s" % img_path)
 
 
 def plot_filter_kernels(filters: torch.Tensor, sample_rate: int, args):
@@ -154,7 +156,7 @@ def plot_filter_kernels(filters: torch.Tensor, sample_rate: int, args):
     """
     from espnet2.layers.sinc_conv import SincConv
 
-    print(
+    logger.warn(
         "When plotting filter kernels, make sure the script has the"
         " correct SincConv settings (currently hard-coded)."
     )
@@ -202,7 +204,7 @@ def plot_filter_kernels(filters: torch.Tensor, sample_rate: int, args):
             img_name = "filter_pre_kernel_%s.%s" % (str(i).zfill(2), args.filetype)
             img_path = str(args.out_folder / img_name)
             plt.savefig(img_path, bbox_inches="tight")
-            print("Plotted %s" % img_path)
+            logger.debug("Plotted %s" % img_path)
 
             kernel = kernels[i][0]
             plt.clf()
@@ -212,7 +214,7 @@ def plot_filter_kernels(filters: torch.Tensor, sample_rate: int, args):
             img_name = "filter_kernel_%s.%s" % (str(i).zfill(2), args.filetype)
             img_path = str(args.out_folder / img_name)
             plt.savefig(img_path, bbox_inches="tight")
-            print("Plotted %s" % img_path)
+            logger.debug("Plotted %s" % img_path)
 
             plt.clf()
             plt.xlabel("kernel index")
@@ -221,7 +223,7 @@ def plot_filter_kernels(filters: torch.Tensor, sample_rate: int, args):
             img_name = "filter_kernel_both_%s.%s" % (str(i).zfill(2), args.filetype)
             img_path = str(args.out_folder / img_name)
             plt.savefig(img_path, bbox_inches="tight")
-            print("Plotted %s" % img_path)
+            logger.debug("Plotted %s" % img_path)
 
             y = np.zeros_like(x_f)
             y[F_mins[i] : F_maxs[i]] = 1.0
@@ -230,7 +232,7 @@ def plot_filter_kernels(filters: torch.Tensor, sample_rate: int, args):
             img_name = "filter_freq_%s.%s" % (str(i).zfill(2), args.filetype)
             img_path = str(args.out_folder / img_name)
             plt.savefig(img_path, bbox_inches="tight")
-            print("Plotted %s" % img_path)
+            logger.debug("Plotted %s" % img_path)
 
             pre_y = np.zeros_like(x_f)
             pre_y[pre_F_mins[i] : pre_F_maxs[i]] = 1.0
@@ -240,7 +242,7 @@ def plot_filter_kernels(filters: torch.Tensor, sample_rate: int, args):
             img_name = "filter_freq_both_%s.%s" % (str(i).zfill(2), args.filetype)
             img_path = args.out_folder / img_name
             plt.savefig(img_path, bbox_inches="tight")
-            print("Plotted %s" % img_path)
+            logger.debug("Plotted %s" % img_path)
 
     plt.clf()
     filters = [32, 71, 113, 126]
@@ -259,7 +261,7 @@ def plot_filter_kernels(filters: torch.Tensor, sample_rate: int, args):
     img_path = str(args.out_folder / img_name)
     plt.savefig(img_path, bbox_inches="tight")
     plt.close(fig)
-    print("Plotted %s" % img_path)
+    logger.debug("Plotted %s" % img_path)
 
 
 def plot_filters(indices, filename, F_mins, F_maxs, output_folder):
@@ -282,7 +284,7 @@ def plot_filters(indices, filename, F_mins, F_maxs, output_folder):
         plt.plot(x, y)
     img_path = str(output_folder / filename)
     plt.savefig(img_path, bbox_inches="tight")
-    print("Plotted %s" % img_path)
+    logger.debug("Plotted %s" % img_path)
 
 
 def main(argv):

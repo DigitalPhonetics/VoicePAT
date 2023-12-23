@@ -1,8 +1,10 @@
+import logging
 import numpy as np
 
 from .utils.visualization import draw_linkability_scores
 from .utils.io import read_targets_and_nontargets
 
+logger = logging.getLogger(__name__)
 
 def compute_linkability(score_file, key_file, omega=1.0, use_draw_scores=False, output_file=None):
     # Computing the global linkability measure for a list of linkage function score
@@ -20,8 +22,7 @@ def compute_linkability(score_file, key_file, omega=1.0, use_draw_scores=False, 
             output_file = "linkability_" + score_file
         draw_linkability_scores(mated_scores, non_mated_scores, Dsys, D, bin_centers, bin_edges, str(output_file))
 
-    print("linkability: %f" % (Dsys))
-    print("")
+    logger.info("linkability: %f" % (Dsys))
 
 
 def linkability(mated_scores, non_mated_scores, omega=1):

@@ -11,13 +11,17 @@ class SpeechBrainVectors:
         'ecapa': 'spkrec-ecapa-voxceleb'
     }
 
-    def __init__(self, vec_type, device, model_path=None):
+    def __init__(self, vec_type, device, model_path: Path = None):
         self.device = device
 
         if model_path is not None and model_path.exists():
-            model_path = str(Path(model_path).absolute())
-            self.extractor = EncoderClassifier.from_hparams(source=model_path, savedir=model_path,
-                                                            run_opts={'device': self.device})
+            model_path = Path(model_path).absolute()
+            savedir = model_path.parent
+            self.extractor = EncoderClassifier.from_hparams(
+                    source=str(model_path), 
+                    savedir=str(savedir),
+                    run_opts={'device': self.device}
+                )
         else:
             if model_path is None:
                 model_path = Path('')

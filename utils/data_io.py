@@ -2,7 +2,9 @@ from pathlib import Path, PosixPath
 from hyperpyyaml import load_hyperpyyaml, dump_hyperpyyaml
 import json
 import pandas as pd
+import logging
 
+logger = logging.getLogger(__name__)
 
 def read_kaldi_format(filename, return_as_dict=True, values_as_string=False):
     key_list = []
@@ -56,7 +58,7 @@ def save_kaldi_format(data, filename):
                 #value = value.encode('utf-8')
                 f.write(f'{key} {value}\n')
             except UnicodeEncodeError:
-                print(f'{key} {value}')
+                logger.error(f'{key} {value}')
                 raise
 
 

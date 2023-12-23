@@ -1,6 +1,7 @@
 from tqdm import tqdm
 import soundfile
 import time
+import logging
 from torch.multiprocessing import Pool, set_start_method
 from itertools import repeat
 
@@ -8,7 +9,7 @@ from .ims_tts import ImsTTS
 from utils import create_clean_dir
 
 set_start_method('spawn', force=True)
-
+logger = logging.getLogger(__name__)
 
 class SpeechSynthesis:
 
@@ -52,7 +53,7 @@ class SpeechSynthesis:
                                         if wav_file.stem in texts.utterances}
 
             if len(already_synthesized_utts):
-                print(f'No synthesis necessary for {len(already_synthesized_utts)} of {len(texts)} utterances...')
+                logger.info(f'No synthesis necessary for {len(already_synthesized_utts)} of {len(texts)} utterances...')
                 texts.remove_instances(list(already_synthesized_utts.keys()))
                 if self.save_output:
                     wavs = already_synthesized_utts
@@ -63,7 +64,7 @@ class SpeechSynthesis:
                         wavs[utt] = wav
 
         if texts:
-            print(f'Synthesize {len(texts)} utterances...')
+            logger.info(f'Synthesize {len(texts)} utterances...')
             if self.force_compute or not dataset_results_dir.exists():
                 create_clean_dir(dataset_results_dir)
 
@@ -84,7 +85,7 @@ class SpeechSynthesis:
                             utt_prosody_dict = {}
                         instances.append((text, utt, speaker_embedding, utt_prosody_dict))
                     except KeyError:
-                        print(f'Key error at {utt}')
+                        logger.warn(f'Key error at {utt}')
                         continue
                 wavs.update(synthesis_job(instances=instances, tts_model=self.tts_models[0],
                                           out_dir=dataset_results_dir, sleep=0, text_is_phones=text_is_phones,
@@ -111,7 +112,7 @@ class SpeechSynthesis:
                                 utt_prosody_dict = {}
                             job_instances.append((text, utt, speaker_embedding, utt_prosody_dict))
                         except KeyError:
-                            print(f'Key error at {utt}')
+                            logger.warn(f'Key error at {utt}')
                             continue
                     instances.append(job_instances)
 
@@ -119,7 +120,7 @@ class SpeechSynthesis:
                 with Pool(processes=num_processes) as pool:
                     job_params = zip(instances, self.tts_models, repeat(dataset_results_dir), sleeps,
                                      repeat(text_is_phones), repeat(self.save_output))
-                    new_wavs = pool.starmap(synthesis_job, job_params)
+                    new_wavs = pool.starmap(tqdm(synthesis_job), job_params)
 
                 for new_wav_dict in new_wavs:
                     wavs.update(new_wav_dict)

@@ -1,5 +1,6 @@
 # This code is partly based on
 # https://github.com/speechbrain/speechbrain/blob/develop/recipes/VoxCeleb/SpeakerRec/speaker_verification_plda.py
+import logging
 from pathlib import Path
 import torch
 from speechbrain.utils.metric_stats import EER
@@ -10,6 +11,7 @@ from anonymization.modules.speaker_embeddings.anonymization.utils.plda_model imp
 from anonymization.modules.speaker_embeddings import SpeakerExtraction
 from utils import write_table, read_kaldi_format, save_kaldi_format
 
+logger = logging.getLogger(__name__)
 
 class ASV:
 
@@ -32,8 +34,8 @@ class ASV:
             self.plda_anon = None
 
         self.extractor = SpeakerExtraction(results_dir=self.score_save_dir / 'emb_xvect',
-                                           model_dir=model_dir, devices=[self.device],
-                                           settings={'vec_type': vec_type, 'vec_level': 'utt'})
+                                           devices=[self.device],
+                                           settings={'vec_type': vec_type, 'emb_level': 'utt', 'embed_model_path': model_dir})
 
     def compute_trial_scores(self, trials, enrol_indices, test_indices, out_file, sim_scores):
         scores = []
@@ -85,8 +87,8 @@ class ASV:
     def eer_compute(self, enrol_dir, test_dir, trial_runs_file):
         # Compute all enrol(spk level) and Test(utt level) embeddings
         # enroll vectors are the speaker-level average vectors
-        enrol_all_dict = self.extractor.extract_speakers(dataset_path=Path(enrol_dir), vec_level='spk')
-        test_all_dict = self.extractor.extract_speakers(dataset_path=Path(test_dir), vec_level='utt')
+        enrol_all_dict = self.extractor.extract_speakers(dataset_path=Path(enrol_dir), emb_level='spk')
+        test_all_dict = self.extractor.extract_speakers(dataset_path=Path(test_dir), emb_level='utt')
 
         enrol_vectors = []
         enrol_ids = []
@@ -138,7 +140,7 @@ class ASV:
             if self.plda_model_dir.exists():
                 self.plda = PLDAModel(train_embeddings=None, results_path=self.plda_model_dir)
             else:
-                print('Train PLDA model...')
+                logger.info('Train PLDA model...')
 
                 plda_data_dir = self.plda_train_data_dir
                 if self.plda_anon:
@@ -146,9 +148,9 @@ class ASV:
                     self.select_data_for_plda(all_data_dir=self.plda_train_data_dir,
                                               selected_data_dir=self.model_dir.parent,
                                               out_dir=plda_data_dir)
-                print(f'Using data under {plda_data_dir}')
+                logger.info(f'Using data under {plda_data_dir}')
 
-                train_dict = self.extractor.extract_speakers(dataset_path=plda_data_dir, vec_level='utt')
+                train_dict = self.extractor.extract_speakers(dataset_path=plda_data_dir, emb_level='utt')
                 self.plda = PLDAModel(train_embeddings=train_dict, results_path=self.plda_model_dir)
 
             plda_score_object = self.plda.compute_distance(enrollment_vectors=enrol_vectors, enrollment_ids=enrol_ids,

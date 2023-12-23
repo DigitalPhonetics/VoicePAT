@@ -1,9 +1,11 @@
+import logging
 import numpy as np
 from scipy.special import expit
 
 from .helpers import optimal_llr
 from .utils.io import read_targets_and_nontargets
 
+logger = logging.getLogger(__name__)
 
 def compute_cllr(score_file, key_file, compute_eer=False):
     # Computing Cllr and min Cllr for binary decision classifiers
@@ -15,11 +17,9 @@ def compute_cllr(score_file, key_file, compute_eer=False):
     else:
         cllr_min = min_cllr(tar, non)
 
-    print("Cllr (min/act): %.3f/%.3f" % (cllr_min, cllr_act))
+    logger.info("Cllr (min/act): %.3f/%.3f" % (cllr_min, cllr_act))
     if compute_eer:
-        print("ROCCH-EER: %2.3f%%" % (100*eer))
-
-    print("")
+        logger.info("ROCCH-EER: %2.3f%%" % (100*eer))
 
 
 def cllr(tar_llrs, nontar_llrs):

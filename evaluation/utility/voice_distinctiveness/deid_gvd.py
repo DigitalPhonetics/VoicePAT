@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -11,6 +12,7 @@ from utils.data_io import read_kaldi_format, write_table
 from evaluation.privacy import ASV
 from evaluation.privacy.asv.metrics.helpers import optimal_llr
 
+logger = logging.getLogger(__name__)
 
 class VoiceDistinctiveness:
 
@@ -18,8 +20,8 @@ class VoiceDistinctiveness:
                  vec_type='xvector', num_per_spk='all'):
         self.num_per_spk = num_per_spk
 
-        self.extractor = SpeakerExtraction(results_dir=score_save_dir / 'emb_xvect', model_dir=spk_ext_model_dir,
-                                           devices=[device], settings={'vec_type': vec_type, 'vec_level': 'utt'})
+        self.extractor = SpeakerExtraction(results_dir=score_save_dir / 'emb_xvect',
+                                           devices=[device], settings={'vec_type': vec_type, 'emb_level': 'utt', 'embed_model_path': spk_ext_model_dir})
 
         self.asv = ASV(model_dir=spk_ext_model_dir, device=device, score_save_dir=score_save_dir, distance=distance,
                        plda_settings=plda_settings, vec_type=vec_type)
@@ -98,7 +100,7 @@ class VoiceDistinctiveness:
             y = [(spk, utt) for spk, utt_list in spk2utt_y.items() for utt in utt_list]
 
         else:
-            print("choose %d utterances for each spk to create trial" % int(self.num_per_spk))
+            logger.info("choose %d utterances for each spk to create trial" % int(self.num_per_spk))
             x = [(spk, utt) for spk, utt_list in spk2utt_x.items()
                  for utt in random.sample(utt_list, k=min(self.num_per_spk, len(utt_list)))]
             y = [(spk, utt) for spk, utt_list in spk2utt_y.items()

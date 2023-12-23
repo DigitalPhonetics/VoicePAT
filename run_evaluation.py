@@ -1,8 +1,10 @@
 # We need to set CUDA_VISIBLE_DEVICES before we import Pytorch so we will read all arguments directly on startup
+import logging
 import os
 from argparse import ArgumentParser
 from pathlib import Path
 import pandas as pd
+from typing import List
 
 parser = ArgumentParser()
 parser.add_argument('--config', default='config_eval.yaml')
@@ -73,7 +75,7 @@ def find_asv_model_checkpoint(model_dir):
 
 
 def asv_train(train_params, output_dir):
-    print(f'Train ASV model: {output_dir}')
+    logging.info(f'Train ASV model: {output_dir}')
     hparams = {
         'pretrained_path': str(train_params['pretrained_model']),
         'batch_size': train_params['batch_size'],
@@ -102,7 +104,7 @@ def asv_train(train_params, output_dir):
 
 def asv_eval(eval_datasets, eval_data_dir, params, device, anon_data_suffix, model_dir=None):
     model_dir = model_dir or find_asv_model_checkpoint(params['model_dir'])
-    print(f'Use ASV model for evaluation: {model_dir}')
+    logging.info(f'Use ASV model for evaluation: {model_dir}')
 
     save_dir = params['evaluation']['results_dir'] / f'{params["evaluation"]["distance"]}_out'
     asv = ASV(model_dir=model_dir, device=device, score_save_dir=save_dir, distance=params['evaluation']['distance'],
@@ -120,7 +122,7 @@ def asv_eval(eval_datasets, eval_data_dir, params, device, anon_data_suffix, mod
             EER = asv.eer_compute(enrol_dir=eval_data_dir / enroll_name, test_dir=eval_data_dir / test_name,
                                   trial_runs_file=eval_data_dir / trial / 'trials')
 
-            print(f'{enroll_name}-{test_name}: {scenario.upper()}-EER={EER}')
+            logging.info(f'{enroll_name}-{test_name}: {scenario.upper()}-EER={EER}')
             trials_info = trial.split('_')
             gender = trials_info[3]
             if 'common' in trial:
@@ -130,7 +132,7 @@ def asv_eval(eval_datasets, eval_data_dir, params, device, anon_data_suffix, mod
                             'trial': 'original' if scenario[1] == 'o' else 'anon', 'EER': round(EER * 100, 3)})
 
     results_df = pd.DataFrame(results)
-    print(results_df)
+    logging.info(results_df)
     results_df.to_csv(save_dir / 'results.csv')
 
 
@@ -163,7 +165,7 @@ def gvd_eval(eval_datasets, eval_data_dir, params, device, anon_data_suffix):
                                   **vd_settings)
         vd_orig, vd_anon = None, None
         save_dir_orig, save_dir_anon = None, None
-        print(f'Use ASV model {spk_ext_model_dir} for computing voice similarities of original and anonymized speakers')
+        logging.info(f'Use ASV model {spk_ext_model_dir} for computing voice similarities of original and anonymized speakers')
     elif 'orig_model_dir' in params['asv_params'] and 'anon_model_dir' in params['asv_params']:
         # use different ASV models for original and anon speaker spaces
         spk_ext_model_dir_orig = find_asv_model_checkpoint(params['asv_params']['orig_model_dir'])
@@ -175,7 +177,7 @@ def gvd_eval(eval_datasets, eval_data_dir, params, device, anon_data_suffix):
         vd_anon = VoiceDistinctiveness(spk_ext_model_dir=spk_ext_model_dir_anon,  score_save_dir=save_dir_anon,
                                        **vd_settings)
         vd = None
-        print(f'Use ASV model {spk_ext_model_dir_orig} for computing voice similarities of original speakers and ASV '
+        logging.info(f'Use ASV model {spk_ext_model_dir_orig} for computing voice similarities of original speakers and ASV '
               f'model {spk_ext_model_dir_anon} for voice similarities of anonymized speakers')
     else:
         raise ValueError('GVD: You either need to specify one "model_dir" for both original and anonymized data or '
@@ -207,18 +209,19 @@ def gvd_eval(eval_datasets, eval_data_dir, params, device, anon_data_suffix):
         gvd_value = vd.gvd(oo_sim, pp_sim) if vd else vd_orig.gvd(oo_sim, pp_sim)
         with open(trial_out_dir / 'gain_of_voice_distinctiveness', 'w') as f:
             f.write(str(gvd_value))
-        print(f'{trial} gvd={gvd_value}')
+        logging.info(f'{trial} gvd={gvd_value}')
 
 
-def asr_train(params, libri_dir, model_name, model_dir, anon_data_suffix):
-    print(f'Train ASR model: {model_dir}')
+def asr_train(params: dict, libri_dir: Path, model_name: str, model_dir: Path, anon_data_suffix: str):
+    logging.info(f'Train ASR model: {model_dir}')
     exp_dir = Path('exp', model_name)
+    libri_dir = Path(libri_dir).expanduser() # could be relative to userdir
     ngpu = min(params.get('num_gpus', 0), torch.cuda.device_count())  # cannot use more gpus than available
 
     train_params = [
         '--lang', 'en',
         '--ngpu', str(ngpu),
-        '--expdir', str(exp_dir),
+        '--expdir', str(exp_dir.absolute()),
         '--use_lm', 'false',
         '--nbpe', '5000',
         '--num_utt', str(params['num_utt']),
@@ -233,11 +236,11 @@ def asr_train(params, libri_dir, model_name, model_dir, anon_data_suffix):
     asr_config = 'conf/train_asr_transformer.yaml'
 
     if params.get('anon', False):
-        local_data_opts = ' '.join([str(libri_dir), str(params['train_data_dir']), anon_data_suffix])
+        local_data_opts = ' '.join([str(libri_dir.absolute()), str(params['train_data_dir'].absolute()), anon_data_suffix])
         train_set = f'train_clean_360_{anon_data_suffix}'
         if params.get('finetuning', False) is True:
             asr_config = 'conf/train_asr_transformer_anon.yaml'
-            train_params.extend(['--pretrained_model', f'{str(params["pretrained_model"])}/valid.acc.ave.pth'])
+            train_params.extend(['--pretrained_model', f'{str(params["pretrained_model"].absolute())}/valid.acc.ave.pth'])
     else:
         local_data_opts = str(libri_dir)
         train_set = 'train_clean_360'
@@ -248,27 +251,27 @@ def asr_train(params, libri_dir, model_name, model_dir, anon_data_suffix):
 
     cwd = Path.cwd()
     os.chdir('evaluation/utility/asr')  # espnet recipe needs several files at specific relative positions
-    print(Path.cwd())
+    logging.debug(Path.cwd())
     subprocess.run(['./asr.sh'] + train_params)
 
     subprocess.run(['ln', '-srf', exp_dir, model_dir])
     os.chdir(cwd)
 
 
-def asr_eval_sh(eval_datasets, eval_data_dir, params, model_path, libri_dir, anon_data_suffix):
-    print(f'Use ASR model for evaluation: {model_path}')
+def asr_eval_sh(eval_datasets: List[str], eval_data_dir: Path, params, model_path, libri_dir, anon_data_suffix):
+    logging.info(f'Use ASR model for evaluation: {model_path}')
     test_sets = []
 
     for asr_dataset in eval_datasets:
         anon_asr_dataset = f'{asr_dataset}_{anon_data_suffix}'
-        test_sets.append(str(eval_data_dir / asr_dataset))
-        test_sets.append(str(eval_data_dir / anon_asr_dataset))
+        test_sets.append(str((eval_data_dir / asr_dataset).absolute()))
+        test_sets.append(str((eval_data_dir / anon_asr_dataset).absolute()))
 
     ngpu = min(params.get('num_gpus', 0), torch.cuda.device_count())  # cannot use more gpus than available
 
     inference_params = [
         '--ngpu', str(ngpu),
-        '--expdir', str(model_path),
+        '--expdir', str(model_path.absolute()),
         '--asr_exp', str(model_path),
         '--use_lm', 'true',
         '--local_data_opts', str(libri_dir),
@@ -290,6 +293,8 @@ def asr_eval_sh(eval_datasets, eval_data_dir, params, model_path, libri_dir, ano
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s- %(levelname)s - %(message)s')
+
     params = parse_yaml(Path('configs', args.config))
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -299,6 +304,9 @@ if __name__ == '__main__':
     eval_data_dir = params['eval_data_dir']
     anon_suffix = params['anon_data_suffix']
 
+    # make sure given paths exist
+    assert eval_data_dir.exists(), f'{eval_data_dir} does not exist'
+
     if 'privacy' in eval_steps:
         if 'asv' in eval_steps['privacy']:
             asv_params = params['privacy']['asv']
@@ -307,9 +315,9 @@ if __name__ == '__main__':
                 asv_train_params = asv_params['training']
                 if not model_dir.exists() or asv_train_params.get('retrain', True) is True:
                     start_time = time.time()
-                    print('Perform ASV training')
+                    logging.info('Perform ASV training')
                     asv_train(train_params=asv_train_params, output_dir=asv_params['model_dir'])
-                    print("ASV training time: %f min ---" % (float(time.time() - start_time) / 60))
+                    logging.info("ASV training time: %f min ---" % (float(time.time() - start_time) / 60))
                     model_dir = scan_checkpoint(model_dir, 'CKPT')
                     if asv_params['vec_type'] == 'xvector':
                         shutil.copy('evaluation/privacy/asv/asv_train/hparams/xvector/hyperparams.yaml', model_dir)
@@ -317,11 +325,11 @@ if __name__ == '__main__':
                         shutil.copy('evaluation/privacy/asv/asv_train/hparams/ecapa/hyperparams.yaml', model_dir)
 
             if 'evaluation' in asv_params:
-                print('Perform ASV evaluation')
+                logging.info('Perform ASV evaluation')
                 start_time = time.time()
                 asv_eval(eval_datasets=eval_data_trials, eval_data_dir=eval_data_dir, params=asv_params, device=device,
                          model_dir=model_dir, anon_data_suffix=anon_suffix)
-                print("--- EER computation time: %f min ---" % (float(time.time() - start_time) / 60))
+                logging.info("--- EER computation time: %f min ---" % (float(time.time() - start_time) / 60))
 
     if 'utility' in eval_steps:
         if 'asr' in eval_steps['utility']:
@@ -339,10 +347,10 @@ if __name__ == '__main__':
 
                 if not model_dir.exists() or asr_train_params.get('retrain', True) is True:
                     start_time = time.time()
-                    print('Perform ASR training')
+                    logging.info('Perform ASR training')
                     asr_train(params=asr_train_params, libri_dir=libri_dir, model_name=model_name,
                               model_dir=model_dir, anon_data_suffix=anon_suffix)
-                    print("--- ASR training time: %f min ---" % (float(time.time() - start_time) / 60))
+                    logging.info("--- ASR training time: %f min ---" % (float(time.time() - start_time) / 60))
 
             if 'evaluation' in asr_params:
                 asr_eval_params = asr_params['evaluation']
@@ -353,15 +361,15 @@ if __name__ == '__main__':
                         asr_model_path = model_dir / 'asr_train_asr_transformer_raw_en_bpe5000'
 
                 start_time = time.time()
-                print('Perform ASR evaluation')
+                logging.info('Perform ASR evaluation')
                 asr_eval_sh(eval_datasets=eval_data_asr, eval_data_dir=eval_data_dir, params=asr_eval_params,
                             model_path=asr_model_path, anon_data_suffix=anon_suffix, libri_dir=libri_dir)
-                print("--- ASR evaluation time: %f min ---" % (float(time.time() - start_time) / 60))
+                logging.info("--- ASR evaluation time: %f min ---" % (float(time.time() - start_time) / 60))
 
         if 'gvd' in eval_steps['utility']:
             gvd_params = params['utility']['gvd']
             start_time = time.time()
-            print('Perform GVD evaluation')
+            logging.info('Perform GVD evaluation')
             gvd_eval(eval_datasets=eval_data_trials, eval_data_dir=eval_data_dir, params=gvd_params, device=device,
                      anon_data_suffix=anon_suffix)
-            print("--- GVD  computation time: %f min ---" % (float(time.time() - start_time) / 60))
+            logging.info("--- GVD  computation time: %f min ---" % (float(time.time() - start_time) / 60))
