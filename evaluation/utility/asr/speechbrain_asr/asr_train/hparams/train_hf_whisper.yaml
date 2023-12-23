@@ -22,8 +22,8 @@ language: english
 normalized_transcripts: True
 
 # Data files
-data_folder: !PLACEHOLDER # e,g./path/to/LibriSpeech
-train_splits: ["train-clean-100", "train-clean-360", "train-other-500"]
+data_folder: /resources/speech/corpora/VoicePrivacyChallenge2022/corpora/LibriSpeech #!PLACEHOLDER # e,g./path/to/LibriSpeech
+train_splits: ["train-clean-360"]
 dev_splits: ["dev-clean"]
 test_splits: ["test-clean", "test-other"]
 skip_prep: False
