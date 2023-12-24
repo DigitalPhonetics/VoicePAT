@@ -1,3 +1,4 @@
+import logging
 import soundfile as sf
 import torch
 from torch.optim import SGD
@@ -10,6 +11,7 @@ from .TrainingInterfaces.Text_to_Spectrogram.FastSpeech2.DurationCalculator impo
 from .TrainingInterfaces.Text_to_Spectrogram.FastSpeech2.EnergyCalculator import EnergyCalculator
 from .TrainingInterfaces.Text_to_Spectrogram.FastSpeech2.PitchCalculator import Parselmouth
 
+logger = logging.getLogger(__name__)
 
 class UtteranceCloner:
 
@@ -59,7 +61,7 @@ class UtteranceCloner:
         try:
             norm_wave = self.ap.audio_to_wave_tensor(normalize=True, audio=wave)
         except ValueError:
-            print('Something went wrong, the reference wave might be too short.')
+            logger.error('Something went wrong, the reference wave might be too short.')
             raise RuntimeError
 
         with torch.inference_mode():

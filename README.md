@@ -1,11 +1,10 @@
 # [VoicePAT: Voice Privacy Anonymization Toolkit](http://arxiv.org/abs/2309.08049)
 
 **Note: This repository and its documentation are still under construction but can already be used for both 
-anonymization and evaluation. We welcome all contributions to introduce more generation methods or evaluation metrics to the VoicPAT framework. 
+anonymization and evaluation. We welcome all contributions to introduce more generation methods or evaluation metrics to the VoicePAT framework. 
 If you are interested in contributing, please leave comments on a GitHub issue.**
 
-VoicePAT is a toolkit for speaker anonymization research, with special focus on speaker anonymization. 
-It is based on the framework(s) by the [VoicePrivacy Challenges](https://github.com/Voice-Privacy-Challenge/Voice-Privacy-Challenge-2022) but contains the following improvements:
+VoicePAT is a toolkit for speaker anonymization research. It is based on the framework(s) by the [VoicePrivacy Challenges](https://github.com/Voice-Privacy-Challenge/Voice-Privacy-Challenge-2022) but contains the following improvements:
 
 * It consists of **two separate procedures for anonymization and evaluation**. This means that the generation of 
   anonymized speech is independent of the evaluation of anonymization systems. Both processes do not need to be 
@@ -26,27 +25,36 @@ It is based on the framework(s) by the [VoicePrivacy Challenges](https://github.
 
 
 ## Installation
-Simply clone the repository and install the dependencies in [requirements.txt](requirements.txt). If you want to use 
-the ESPnet-based ASR evaluation model, you additionally need to clone and install [ESPNet](https://github.com/espnet/espnet/) and insert the link to 
-it in [evaluation/utility/asr/path.sh](evaluation/utility/asr/espnet_asr/path.sh), e.g., ``MAIN_ROOT=~/espnet``.
+
+Requires `conda` for environment management. Installation of `mamba` is also recommended for speeding up the environment-related tasks. Simply clone the repository and run the following commands, a conda environment will be generated in the project root folder and the pretrained models will be downloaded.
+
+```bash
+sudo apt install libespeak-ng   # alternatively use your own package manager
+make install pretrained_models  
+```
+
+The datasets have to be downloaded via the VoicePrivacy Challenge framework. Once the download is complete, the `.scp` files need to be converted to the absolute path, because they are relative to the challenge folder. Use [utils/relative_scp_to_abs.py](utils/relative_scp_to_abs.py) for this purpose. Then simply point `data_path` in the YAML configurations to the data folder of the VoicePrivacy Challenge framework.
+
+If you want to use the ESPnet-based ASR evaluation model, you additionally need to clone and install [ESPNet](https://github.com/espnet/espnet/) and insert the link to it in [evaluation/utility/asr/path.sh](evaluation/utility/asr/path.sh), e.g., ``MAIN_ROOT=~/espnet``.
 
 ## Usage
 
 ![](figures/framework.png)
 
-For using the toolkit with the existing methods, you can use the configuration files in [configs](configs). You can 
-also add more modules and models to the code and create your own config by using the existing ones as template.
-
+For using the toolkit with the existing methods, you can use the configuration files in [configs](configs). You can also add more modules and models to the code and create your own config by using the existing ones as template. The configuration files use HyperPyYAML syntax, for which a useful reference is available [here](https://colab.research.google.com/drive/1Pg9by4b6-8QD2iC0U7Ic3Vxq4GEwEdDz?usp=sharing).
 
 ### Anonymization
+
 The framework currently contains only one pipeline and config for anonymization, [anon_ims_sttts_pc.yaml](configs/anon_ims_sttts_pc.yaml). If you are using this config, you need to modify at least the following entries:
-```
-data_dir: path to original data in Kaldi-format for anonymization
-results_dir: path to location for all (intermediate) results of the anonymization
-models_dir:  path to models location
+
+```YAML
+data_dir:    # path to original data in Kaldi-format for anonymization
+results_dir: # path to location for all (intermediate) results of the anonymization
+models_dir:  # path to models location
 ```
 
 Running an anonymization pipeline is done like this:
+
 ```
 python run_anonymization.py --config anon_ims_sttts_pc.yaml --gpu_ids 0,1 --force_compute
 ```
@@ -59,25 +67,28 @@ Pretrained models for this anonymization can be found at [https://github.
 com/DigitalPhonetics/speaker-anonymization/releases/tag/v2.0](https://github.com/DigitalPhonetics/speaker-anonymization/releases/tag/v2.0) and earlier releases.
 
 ### Evaluation
-All other config files in [configs](configs) can be used for evaluation with different settings. In these configs, 
-you need to adapt at least
+
+All other config files in [configs](configs) can be used for evaluation with different settings. In these configs, you need to adapt at least
+
 ```
 eval_data_dir: path to anonymized evaluation data in Kaldi-format
 asr/libri_dir: path to original LibriSpeech dataset
 ```
 
 Running an evaluation pipeline is done like this:
+
 ```
 python run_evaluation.py --config eval_pre_ecapa_cos.yaml --gpu_ids 1,2,3
 ```
-making the GPUs with IDs 1, 2 and 3 available to the process. If no GPU is specified, it will default to CUDA:0 or 
-use all GPUs if 
-cuda is available, or run on CPU otherwise.
 
-Pretrained evaluation models can be found in release v1. 
+making the GPUs with IDs 1, 2 and 3 available to the process. If no GPU is specified, it will default to CUDA:0 or use all GPUs if cuda is available, or run on CPU otherwise.
+
+Pretrained evaluation models can be found in release v1.
 
 ## Acknowledgements
+
 Several parts of this toolkit are based on or use code from external sources, i.e.,
+
 * [VoicePrivacy Challenge 2022](https://github.com/Voice-Privacy-Challenge/Voice-Privacy-Challenge-2022), [ESPnet](https://github.com/espnet/espnet/), [SpeechBrain](https://github.com/speechbrain/speechbrain/) for evaluation
 * the [GAN-based anonymization system by IMS (University of Stuttgart)](https://github.com/DigitalPhonetics/speaker-anonymization) 
   for 

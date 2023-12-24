@@ -1,34 +1,15 @@
 root_dir : ..
-data_dir: !ref <root_dir>/data  # TODO adjust path
+data_dir: !PLACEHOLDER
 save_intermediate: true
 save_output: true
+
+results_dir: !PLACEHOLDER # TODO adjust path, e.g. <root_dir>/results
+models_dir:  !PLACEHOLDER  # TODO adjust path, e.g. <root_dir>/models
+vectors_dir: !ref <root_dir>/results/original_speaker_embeddings
+
 force_compute_all: false
+datasets: !include:datasets_vpc2022_official_anon.yaml
 
-datasets:
-  - name: libri_dev
-    data: libri
-    set: dev
-    enrolls: [enrolls]
-    trials: [trials_f, trials_m]
-  - name: libri_test
-    data: libri
-    set: test
-    enrolls: [enrolls]
-    trials: [trials_f, trials_m]
-  - name: vctk_dev
-    data: vctk
-    set: dev
-    enrolls: [enrolls]
-    trials: [trials_f_all, trials_m_all]
-  - name: vctk_test
-    data: vctk
-    set: test
-    enrolls: [enrolls]
-    trials: [trials_f_all, trials_m_all]
-
-results_dir: !ref <root_dir>/results # TODO adjust path
-models_dir:  !ref <root_dir>/models # TODO adjust path
-vectors_dir: !ref <results_dir>/original_speaker_embeddings
 pipeline: sttts
 
 modules:
@@ -48,8 +29,10 @@ modules:
     vec_type: style-embed
     emb_model_path: !ref <models_dir>/tts/Embedding/embedding_function.pt
     emb_level: spk   # possible: spk, utt
-    anon_method: gan   # possible: pool, random
-    anon_name: gan_style-embed
+    anon_method: !include:anon/ims_gan.yaml    # possible: pool, random
+      models_dir: !ref <models_dir>
+      save_intermediate: !ref <save_intermediate>
+      vec_type: !ref <modules[speaker_embeddings][vec_type]>
     extraction_results_path: !ref <results_dir>/original_speaker_embeddings/<modules[speaker_embeddings][vec_type]>_<modules[speaker_embeddings][emb_level]>-level
     anon_results_path: !ref <results_dir>/anon_speaker_embeddings/<modules[speaker_embeddings][vec_type]>_<modules[speaker_embeddings][emb_level]>-level
 

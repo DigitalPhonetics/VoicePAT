@@ -1,0 +1,49 @@
+name: voicepat_env
+channels:
+  - nvidia
+  - pytorch
+  - conda-forge
+  - default
+dependencies:
+  - pip
+  - pip:
+    - git+https://github.com/speechbrain/HyperPyYAML.git # pip version has a bug
+    - noisereduce
+    - pyloudnorm
+    - phonemizer
+    - praat-parselmouth
+    - espnet
+    - espnet_model_zoo
+  - python
+  - urllib3
+  - matplotlib
+  - seaborn
+  - jupyter
+  - jupyterlab
+  - ipywidgets
+  - ipympl
+  - blas=1.0=mkl
+  - numpy
+  - cvxopt
+  - scipy
+  - scikit-learn
+  - pyyaml
+  - click
+  - typer
+  - typer-cli
+  - tqdm
+  - openpyxl
+  - librosa
+  - resampy
+  - python-sounddevice
+  - pytorch::pytorch-cuda
+  - pytorch::ignite
+  - pytorch::torchaudio
+  - cudatoolkit-dev
+  - tensorboardx
+  - tensorboard
+  - optuna
+  - hydra-core
+  - typeguard==2.13.3
+  - conda-build
+  - torchvision # only to prevent warnings

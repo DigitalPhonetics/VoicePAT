@@ -1,3 +1,4 @@
+import logging
 from tqdm import tqdm
 from pathlib import Path
 import torch
@@ -5,7 +6,7 @@ import torchaudio
 from tqdm.contrib.concurrent import process_map
 import time
 from torch.multiprocessing import set_start_method
-from itertools import repeat
+from itertools import repeat, cycle
 import numpy as np
 
 from .extraction.embedding_methods import SpeechBrainVectors, StyleEmbeddings
@@ -14,7 +15,7 @@ from .speaker_embeddings import SpeakerEmbeddings
 from utils import read_kaldi_format
 
 set_start_method('spawn', force=True)
-
+logger = logging.getLogger(__name__)
 
 class SpeakerExtraction:
 
@@ -25,6 +26,7 @@ class SpeakerExtraction:
         self.save_intermediate = save_intermediate
         self.force_compute = force_compute if force_compute else settings.get('force_compute_extraction', False)
 
+        self.emb_model_path = settings['emb_model_path']
         self.vec_type = settings['vec_type']
         self.emb_level = settings['emb_level']
 
@@ -40,13 +42,10 @@ class SpeakerExtraction:
 
         self.model_hparams = {
             'vec_type': self.vec_type,
-            'model_path': settings.get('emb_model_path') or model_dir
+            'model_path': self.emb_model_path,
         }
 
-        if self.n_processes > 1:
-            self.extractors = None
-        else:
-            self.extractors = create_extractors(hparams=self.model_hparams, device=self.devices[0])
+        self.extractors = [create_extractors(hparams=self.model_hparams, device=device) for device, process in zip(cycle(devices), range(len(devices)))]
 
     def extract_speakers(self, dataset_path, dataset_name=None, emb_level=None):
         dataset_name = dataset_name if dataset_name is not None else dataset_path.name
@@ -59,10 +58,12 @@ class SpeakerExtraction:
         speaker_embeddings = SpeakerEmbeddings(vec_type=self.vec_type, emb_level='utt', device=self.devices[0])
 
         if (dataset_results_dir / 'speaker_vectors.pt').exists() and not self.force_compute:
-            print('No speaker extraction necessary; load existing embeddings instead...')
+            logger.info('No speaker extraction necessary; load existing embeddings instead...')
             speaker_embeddings.load_vectors(dataset_results_dir)
+            # assume the loaded vectors are computed according to the setting in config
+            speaker_embeddings.emb_level = emb_level
         else:
-            print(f'Extract embeddings of {len(wav_scp)} utterances')
+            logger.info(f'Extract embeddings of {len(wav_scp)} utterances')
             speaker_embeddings.new = True
 
             if self.n_processes > 1:
@@ -78,7 +79,7 @@ class SpeakerExtraction:
                 utts = [x[1] for x in returns]
                 utts = list(np.concatenate(utts))
             else:
-                vectors, utts = extraction_job([wav_scp, self.extractors, 0, self.devices[0], self.model_hparams, 0])
+                vectors, utts = extraction_job([wav_scp, self.extractors[0], 0, self.devices[0], self.model_hparams, 0])
                 vectors = torch.stack(vectors, dim=0)
 
             speakers = [utt2spk[utt] for utt in utts]
@@ -125,8 +126,8 @@ def extraction_job(data):
 
         try:
             spk_embs = [extractor.extract_vector(audio=norm_wave, sr=fs) for extractor in speaker_extractors]
-        except RuntimeError:
-            print(f'Runtime error: {utt}, {signal.shape}, {norm_wave.shape}')
+        except RuntimeError as e:
+            logger.warn(f'Runtime error: {utt}, {signal.shape}, {norm_wave.shape}')
             continue
 
         if len(spk_embs) == 1:

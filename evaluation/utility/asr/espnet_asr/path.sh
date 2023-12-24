@@ -1,4 +1,4 @@
-MAIN_ROOT=~/espnet/  # TODO: change this to the path to your ESPnet installation
+MAIN_ROOT=./voicepat_env/lib/python3.11/site-packages/espnet  # TODO: change this to the path to your ESPnet installation
 
 export PATH=$PWD/utils/:$PATH
 export LC_ALL=C
@@ -8,7 +8,12 @@ if [ -f "${MAIN_ROOT}"/tools/activate_python.sh ]; then
 else
     echo "[INFO] "${MAIN_ROOT}"/tools/activate_python.sh is not present"
 fi
+
+if [ -f "${MAIN_ROOT}"/tools/extra_path.sh ]; then
 . "${MAIN_ROOT}"/tools/extra_path.sh
+else
+    echo "[INFO] "${MAIN_ROOT}"/tools/extra_path.sh is not present"
+fi
 
 export OMP_NUM_THREADS=1
 

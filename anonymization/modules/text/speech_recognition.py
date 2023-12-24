@@ -1,8 +1,9 @@
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 import time
+import logging
 from torch.multiprocessing import set_start_method
-from itertools import repeat
+from itertools import cycle, repeat
 import numpy as np
 from pathlib import Path
 
@@ -11,7 +12,7 @@ from .recognition.ims_asr import ImsASR
 from utils import read_kaldi_format
 
 set_start_method('spawn', force=True)
-
+logger = logging.getLogger(__name__)
 
 class SpeechRecognition:
 
@@ -33,11 +34,8 @@ class SpeechRecognition:
             if self.save_intermediate:
                 raise ValueError('Results dir must be specified in parameters or settings!')
 
-        self.asr_model = create_model_instance(hparams=self.model_hparams, device=devices[0])
-        self.is_phones = (self.asr_model.output == 'phones')
-
-        if self.n_processes > 1:
-            self.asr_model = None
+        self.asr_models = [create_model_instance(hparams=self.model_hparams, device=device) for device, process in zip(cycle(devices), range(len(devices)))]
+        self.is_phones = (self.asr_models[0].output == 'phones')
 
     def recognize_speech(self, dataset_path, dataset_name=None, utterance_list=None):
         dataset_name = dataset_name if dataset_name else dataset_path.name
@@ -52,13 +50,13 @@ class SpeechRecognition:
             texts.load_text(in_dir=dataset_results_dir)
 
         if len(texts) == len(utt2spk):
-            print('No speech recognition necessary; load existing text instead...')
+            logger.info('No speech recognition necessary; load existing text instead...')
         else:
             if len(texts) > 0:
-                print(f'No speech recognition necessary for {len(texts)} of {len(utt2spk)} utterances')
+                logger.info(f'No speech recognition necessary for {len(texts)} of {len(utt2spk)} utterances')
             # otherwise, recognize the speech
             dataset_results_dir.mkdir(exist_ok=True, parents=True)
-            print(f'Recognize speech of {len(utt2spk)} utterances...')
+            logger.info(f'Recognize speech of {len(utt2spk)} utterances...')
             wav_scp = read_kaldi_format(dataset_path / 'wav.scp')
 
             utterances = []
@@ -74,7 +72,7 @@ class SpeechRecognition:
             start = time.time()
 
             if self.n_processes == 1:
-                new_texts = [recognition_job([utterances, self.asr_model,
+                new_texts = [recognition_job([utterances, self.asr_models[0],
                                              dataset_results_dir, 0, self.devices[0], self.model_hparams, None,
                                              save_intermediate])]
             else:
@@ -82,14 +80,14 @@ class SpeechRecognition:
                 indices = np.array_split(np.arange(len(utterances)), self.n_processes)
                 utterance_jobs = [[utterances[ind] for ind in chunk] for chunk in indices]
                 # multiprocessing
-                job_params = zip(utterance_jobs, repeat(self.asr_model), repeat(dataset_results_dir), sleeps,
+                job_params = zip(utterance_jobs, repeat(self.asr_models), repeat(dataset_results_dir), sleeps,
                                  self.devices, repeat(self.model_hparams), list(range(self.n_processes)),
                                  repeat(save_intermediate))
                 new_texts = process_map(recognition_job, job_params, max_workers=self.n_processes)
 
             end = time.time()
             total_time = round(end - start, 2)
-            print(f'Total time for speech recognition: {total_time} seconds ({round(total_time / 60, 2)} minutes / '
+            logger.info(f'Total time for speech recognition: {total_time} seconds ({round(total_time / 60, 2)} minutes / '
                   f'{round(total_time / 60 / 60, 2)} hours)')
             texts = self._combine_texts(main_text_instance=texts, additional_text_instances=new_texts)
 
@@ -129,9 +127,6 @@ def recognition_job(data):
 
     add_suffix = f'_{job_id}' if job_id is not None else None
     job_id = job_id or 0
-
-    if asr_model is None:
-        asr_model = create_model_instance(hparams=model_hparams, device=device)
 
     texts = Text(is_phones=(asr_model.output == 'phones'))
     i = 0

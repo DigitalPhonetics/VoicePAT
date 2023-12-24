@@ -4,9 +4,10 @@ Taken from ESPNet, modified by Florian Lux
 
 import os
 from abc import ABC
-
+import logging
 import torch
 
+logger = logging.getLogger(__name__)
 
 def cumsum_durations(durations):
     out = [0]
@@ -39,11 +40,11 @@ def get_most_recent_checkpoint(checkpoint_dir, verbose=True):
         if el.endswith(".pt") and el != "best.pt":
             checkpoint_list.append(int(el.split(".")[0].split("_")[1]))
     if len(checkpoint_list) == 0:
-        print("No previous checkpoints found, cannot reload.")
+        logger.info("No previous checkpoints found, cannot reload.")
         return None
     checkpoint_list.sort(reverse=True)
     if verbose:
-        print("Reloading checkpoint_{}.pt".format(checkpoint_list[0]))
+        logger.info("Reloading checkpoint_{}.pt".format(checkpoint_list[0]))
     return os.path.join(checkpoint_dir, "checkpoint_{}.pt".format(checkpoint_list[0]))
 
 

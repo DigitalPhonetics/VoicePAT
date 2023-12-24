@@ -1,8 +1,11 @@
 # We need to set CUDA_VISIBLE_DEVICES before we import Pytorch so we will read all arguments directly on startup
+import logging
 import os
 from argparse import ArgumentParser
 from collections import defaultdict
 from pathlib import Path
+import pandas as pd
+from typing import List
 
 parser = ArgumentParser()
 parser.add_argument('--config', default='config_eval.yaml')
@@ -104,6 +107,8 @@ def get_eval_asr_datasets(datasets_list, eval_data_dir, anon_suffix):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s- %(levelname)s - %(message)s')
+
     params = parse_yaml(Path('configs', args.config))
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -114,6 +119,9 @@ if __name__ == '__main__':
     eval_data_trials = check_vctk_split(eval_data_trials, eval_data_dir=eval_data_dir, anon_suffix=anon_suffix)
     eval_data_asr = get_eval_asr_datasets(params['datasets'], eval_data_dir=eval_data_dir, anon_suffix=anon_suffix)
 
+    # make sure given paths exist
+    assert eval_data_dir.exists(), f'{eval_data_dir} does not exist'
+
     if 'privacy' in eval_steps:
         if 'asv' in eval_steps['privacy']:
             asv_params = params['privacy']['asv']
@@ -122,9 +130,9 @@ if __name__ == '__main__':
                 asv_train_params = asv_params['training']
                 if not model_dir.exists() or asv_train_params.get('retrain', True) is True:
                     start_time = time.time()
-                    print('Perform ASV training')
+                    logging.info('Perform ASV training')
                     train_asv_eval(train_params=asv_train_params, output_dir=asv_params['model_dir'])
-                    print("ASV training time: %f min ---" % (float(time.time() - start_time) / 60))
+                    logging.info("ASV training time: %f min ---" % (float(time.time() - start_time) / 60))
                     model_dir = scan_checkpoint(model_dir, 'CKPT')
                     if asv_params['vec_type'] == 'xvector':
                         shutil.copy('evaluation/privacy/asv/asv_train/hparams/xvector/hyperparams.yaml', model_dir)
@@ -132,11 +140,11 @@ if __name__ == '__main__':
                         shutil.copy('evaluation/privacy/asv/asv_train/hparams/ecapa/hyperparams.yaml', model_dir)
 
             if 'evaluation' in asv_params:
-                print('Perform ASV evaluation')
+                logging.info('Perform ASV evaluation')
                 start_time = time.time()
                 evaluate_asv(eval_datasets=eval_data_trials, eval_data_dir=eval_data_dir, params=asv_params,
                              device=device,  model_dir=model_dir, anon_data_suffix=anon_suffix)
-                print("--- EER computation time: %f min ---" % (float(time.time() - start_time) / 60))
+                logging.info("--- EER computation time: %f min ---" % (float(time.time() - start_time) / 60))
 
     if 'utility' in eval_steps:
         if 'asr' in eval_steps['utility']:
@@ -155,10 +163,10 @@ if __name__ == '__main__':
 
                 if not model_dir.exists() or asr_train_params.get('retrain', True) is True:
                     start_time = time.time()
-                    print('Perform ASR training')
+                    logging.info('Perform ASR training')
                     train_asr_eval(params=asr_train_params, libri_dir=libri_dir, model_name=model_name,
                                    model_dir=model_dir, anon_data_suffix=anon_suffix)
-                    print("--- ASR training time: %f min ---" % (float(time.time() - start_time) / 60))
+                    logging.info("--- ASR training time: %f min ---" % (float(time.time() - start_time) / 60))
 
             if 'evaluation' in asr_params:
                 asr_eval_params = asr_params['evaluation']
@@ -172,16 +180,16 @@ if __name__ == '__main__':
                         asr_model_path = model_dir
 
                 start_time = time.time()
-                print('Perform ASR evaluation')
+                logging.info('Perform ASR evaluation')
                 evaluate_asr(eval_datasets=eval_data_asr, eval_data_dir=eval_data_dir, params=asr_eval_params,
                              model_path=asr_model_path, anon_data_suffix=anon_suffix, libri_dir=libri_dir,
                              device=device, backend=backend)
-                print("--- ASR evaluation time: %f min ---" % (float(time.time() - start_time) / 60))
+                logging.info("--- ASR evaluation time: %f min ---" % (float(time.time() - start_time) / 60))
 
         if 'gvd' in eval_steps['utility']:
             gvd_params = params['utility']['gvd']
             start_time = time.time()
-            print('Perform GVD evaluation')
+            logging.info('Perform GVD evaluation')
             evaluate_gvd(eval_datasets=eval_data_trials, eval_data_dir=eval_data_dir, params=gvd_params,
                          device=device, anon_data_suffix=anon_suffix)
-            print("--- GVD  computation time: %f min ---" % (float(time.time() - start_time) / 60))
+            logging.info("--- GVD  computation time: %f min ---" % (float(time.time() - start_time) / 60))

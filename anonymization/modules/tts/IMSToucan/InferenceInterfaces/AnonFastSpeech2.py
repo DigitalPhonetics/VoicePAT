@@ -1,5 +1,6 @@
 import itertools
 import os
+import logging
 
 import librosa.display as lbd
 import matplotlib.pyplot as plt
@@ -15,6 +16,7 @@ from ..Preprocessing.TextFrontend import ArticulatoryCombinedTextFrontend
 from ..Preprocessing.TextFrontend import get_language_id
 from ..TrainingInterfaces.Spectrogram_to_Embedding.StyleEmbedding import StyleEmbedding
 
+logger = logging.getLogger(__name__)
 
 class AnonFastSpeech2(torch.nn.Module):
 
@@ -174,7 +176,7 @@ class AnonFastSpeech2(torch.nn.Module):
         for (text, durations, pitch, energy) in itertools.zip_longest(text_list, dur_list, pitch_list, energy_list):
             if text.strip() != "":
                 if not silent:
-                    print("Now synthesizing: {}".format(text))
+                    logger.info("Now synthesizing: {}".format(text))
                 if wav is None:
                     if durations is not None:
                         durations = durations.to(self.device)

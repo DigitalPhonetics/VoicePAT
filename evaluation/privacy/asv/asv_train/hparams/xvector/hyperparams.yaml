@@ -52,5 +52,3 @@ modules:
 pretrainer: !new:speechbrain.utils.parameter_transfer.Pretrainer
     loadables:
         embedding_model: !ref <embedding_model>
-    paths:
-        embedding_model: !ref embedding_model.ckpt

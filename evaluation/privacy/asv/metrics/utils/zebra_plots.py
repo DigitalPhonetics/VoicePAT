@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 from matplotlib._cm import datad
 import matplotlib.pyplot as mpl
@@ -7,6 +8,7 @@ from os import sep
 from .plo_plots import PriorLogOddsPlots
 from .io import read_targets_and_nontargets
 
+logger = logging.getLogger(__name__)
 
 __author__ = "Andreas Nautsch"
 __email__ = "nautsch@eurecom.fr"
@@ -84,10 +86,9 @@ def zebra_framework(plo_plot, scr_path, key_path, label='ZEBRA profile',
         str_max_abs_llr = '0'
 
     # print outs
-    print('')
-    print("%s" % label)
-    print("Population: %s bit" % str_dece)
-    print("Individual: %s (%s)" % (str_max_abs_llr, cat_tag))
+    logger.info("%s" % label)
+    logger.info("Population: %s bit" % str_dece)
+    logger.info("Individual: %s (%s)" % (str_max_abs_llr, cat_tag))
 
     # Creating log-odds plots
     if color_min is not None:
@@ -99,7 +100,7 @@ def zebra_framework(plo_plot, scr_path, key_path, label='ZEBRA profile',
         # DCF
         if dcf_pot:
             plo_plot.plot_dcf(color_min=color_min, style_min=style_min, color_act=color_act, style_act=style_act)
-            print("1 - min Cllr: %.3f (0 is good)" % plo_plot.get_delta_DCF())
+            logger.info("1 - min Cllr: %.3f (0 is good)" % plo_plot.get_delta_DCF())
 
         plo_plot.add_legend_entry(legend_entry)
 
