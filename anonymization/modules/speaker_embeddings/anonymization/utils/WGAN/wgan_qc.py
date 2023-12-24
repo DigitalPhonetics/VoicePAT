@@ -261,16 +261,18 @@ class WassersteinGanQuadraticCost:
         # Remove color channel
         return generated_data.data.cpu().numpy()[:, 0, :, :]
 
-    def save_model_checkpoint(self, model_path, model_parameters, timestampStr):
+    def save_model_checkpoint(self, model_path, model_parameters, timestampStr, dataset_mean, dataset_std):
         # dateTimeObj = datetime.now()
         # timestampStr = dateTimeObj.strftime("%d-%m-%Y-%H-%M-%S")
         name = '%s_%s' % (timestampStr, 'wgan')
         model_filename = os.path.join(model_path, name)
         torch.save({
-            'generator_state_dict'       : self.G.state_dict(),
-            'critic_state_dict'          : self.D.state_dict(),
-            'gen_optimizer_state_dict'   : self.G_opt.state_dict(),
+            'generator_state_dict': self.G.state_dict(),
+            'critic_state_dict': self.D.state_dict(),
+            'gen_optimizer_state_dict': self.G_opt.state_dict(),
             'critic_optimizer_state_dict': self.D_opt.state_dict(),
-            'model_parameters'           : model_parameters,
-            'iterations'                 : self.num_steps
+            'model_parameters': model_parameters,
+            'iterations': self.num_steps,
+            'mean': dataset_mean,
+            'std': dataset_std
             }, model_filename)

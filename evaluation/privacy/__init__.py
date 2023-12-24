@@ -1,1 +1,1 @@
-from .asv import ASV, train_asv_speaker_embeddings
+from .asv import evaluate_asv, train_asv_eval

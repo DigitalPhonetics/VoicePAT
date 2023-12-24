@@ -1,13 +1,11 @@
-import logging
 from pathlib import Path
 from argparse import ArgumentParser
 import torch
-
-from anonymization.pipelines.sttts_pipeline import STTTSPipeline
+from anonymization.pipelines.dsp_pipeline import DSPPipeline
 from utils import parse_yaml, get_datasets
 
 PIPELINES = {
-    'sttts': STTTSPipeline
+    'dsp': DSPPipeline
 }
 
 if __name__ == '__main__':
@@ -18,8 +16,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     config = parse_yaml(Path('configs', args.config))
-    # datasets = get_datasets(config)
-    datasets = {'train-clean-360': Path(config['data_dir'], 'train-clean-360')}
+    datasets = get_datasets(config)
 
     gpus = args.gpu_ids.split(',')
 
@@ -30,8 +27,6 @@ if __name__ == '__main__':
     else:
         devices.append(torch.device('cpu'))
 
-    with torch.no_grad():
-        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s- %(levelname)s - %(message)s')
-        logging.info(f'Running pipeline: {config["pipeline"]}')
-        pipeline = PIPELINES[config['pipeline']](config=config, force_compute=args.force_compute, devices=devices)
-        pipeline.run_anonymization_pipeline(datasets)
+    pipeline = PIPELINES[config['pipeline']](config=config)
+    pipeline.run_anonymization_pipeline(datasets)
+

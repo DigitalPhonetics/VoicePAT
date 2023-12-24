@@ -37,6 +37,12 @@ def scan_checkpoint(cp_dir, prefix):
     return Path(sorted(cp_list)[-1])
 
 
+def find_asv_model_checkpoint(model_dir):
+    if list(model_dir.glob('CKPT+*')):  # select latest checkpoint
+        model_dir = scan_checkpoint(model_dir, 'CKPT')
+    return model_dir
+
+
 def get_datasets(config):
     datasets = {}
     data_dir = config.get('data_dir', None).expanduser() # if '~' is given in path then manually expand

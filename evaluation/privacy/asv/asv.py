@@ -35,7 +35,7 @@ class ASV:
 
         self.extractor = SpeakerExtraction(results_dir=self.score_save_dir / 'emb_xvect',
                                            devices=[self.device],
-                                           settings={'vec_type': vec_type, 'emb_level': 'utt', 'embed_model_path': model_dir})
+                                           settings={'vec_type': vec_type, 'emb_level': 'utt', 'emb_model_path': model_dir})
 
     def compute_trial_scores(self, trials, enrol_indices, test_indices, out_file, sim_scores):
         scores = []

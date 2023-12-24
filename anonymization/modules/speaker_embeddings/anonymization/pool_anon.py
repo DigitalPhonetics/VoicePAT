@@ -19,7 +19,7 @@ from utils import transform_path
 logger = logging.getLogger(__name__)
 
 REVERSED_GENDERS = {
-    "m": "f", 
+    "m": "f",
     "f": "m"
 }
 
@@ -29,8 +29,8 @@ class PoolAnonymizer(BaseAnonymizer):
     An implementation of the 'Pool' anonymization method, that is based on the
     primary baseline of the Voice Privacy Challenge 2020.
 
-    For every source x-vector, an anonymized x-vector is computed by finding 
-    the N farthest x-vectors in an external pool (LibriTTS train-other-500) 
+    For every source x-vector, an anonymized x-vector is computed by finding
+    the N farthest x-vectors in an external pool (LibriTTS train-other-500)
     according to the PLDA distance, and by averaging N∗ randomly selected
     vectors among them. In the baseline, we use:
         N = 200,
@@ -51,7 +51,7 @@ class PoolAnonymizer(BaseAnonymizer):
         scaling: str = None,
         stats_per_dim_path: Union[str, PathLike] = None,
         distance_model_path: Union[str, PathLike] = "distances/plda/libritts_train_other_500_xvector",
-        embed_model_path: Union[str, PathLike] = None,
+        emb_model_path: Union[str, PathLike] = None,
         save_intermediate: bool = False,
         suffix: str = "_anon",
         **kwargs,
@@ -63,11 +63,11 @@ class PoolAnonymizer(BaseAnonymizer):
 
             device (Union[str, torch.device, int, None]): Device to use for
                 the procedure, e.g. 'cpu', 'cuda', 'cuda:0', etc.
-            
-            model_name (str): Name of the model, used for distances that 
+
+            model_name (str): Name of the model, used for distances that
                 require a model (e.g., PLDA).
 
-            pool_data_dir (Union[str, PathLike]): Path to the audio data 
+            pool_data_dir (Union[str, PathLike]): Path to the audio data
             which will be used for x-vector pool extraction.
 
             pool_vec_path (Union[str, PathLike]): Path to the stored
@@ -81,10 +81,10 @@ class PoolAnonymizer(BaseAnonymizer):
             distance (str): Distance measure, either 'plda' or 'cosine'.
 
             cross_gender (bool): Whether to switch genders of the speakers
-                during anonymization. 
+                during anonymization.
 
-            proximity (str): Proximity measure, determining which vectors in 
-                the pool are the 'fittest', can be either 'farthest', 
+            proximity (str): Proximity measure, determining which vectors in
+                the pool are the 'fittest', can be either 'farthest',
                 'nearest' or 'center'.
 
             scaling (str): Scaling method to use, can be either 'minmax' or
@@ -97,7 +97,7 @@ class PoolAnonymizer(BaseAnonymizer):
             distance_model_path (Union[str, PathLike]): Path to the stored
                 distance model (required for PLDA).
 
-            embed_model_path (Union[str, PathLike]): Path to the directory
+            emb_model_path (Union[str, PathLike]): Path to the directory
                 containing the speaker embedding model.
 
             save_intermediate (bool): Whether to save intermediate results.
@@ -113,7 +113,7 @@ class PoolAnonymizer(BaseAnonymizer):
 
         self.model_name = model_name if model_name else f"pool_{vec_type}"
 
-        self.N = N 
+        self.N = N
         self.N_star = N_star
         self.proximity = proximity
         self.cross_gender = cross_gender
@@ -123,7 +123,7 @@ class PoolAnonymizer(BaseAnonymizer):
         self.pool_embeddings = self._load_pool_embeddings(
             pool_data_dir=Path(pool_data_dir).expanduser(),
             pool_vec_path=Path(pool_vec_path).expanduser(),
-            embed_model_path=Path(embed_model_path).expanduser(),
+            emb_model_path=Path(emb_model_path).expanduser(),
         )
         self.pool_genders = {
             gender: [
@@ -149,7 +149,7 @@ class PoolAnonymizer(BaseAnonymizer):
         self.scaling = scaling
         self.stats_per_dim_path = stats_per_dim_path or Path()
 
-    def _load_pool_embeddings(self, pool_data_dir, pool_vec_path, embed_model_path):
+    def _load_pool_embeddings(self, pool_data_dir, pool_vec_path, emb_model_path):
         logger.debug(pool_data_dir)
         if pool_vec_path.exists():
             pool_embeddings = SpeakerEmbeddings(
@@ -157,7 +157,7 @@ class PoolAnonymizer(BaseAnonymizer):
             )
             pool_embeddings.load_vectors(pool_vec_path)
         else:
-            extraction_settings = {"vec_type": self.vec_type, "emb_level": "spk", "embed_model_path": embed_model_path}
+            extraction_settings = {"vec_type": self.vec_type, "emb_level": "spk", "emb_model_path": emb_model_path}
             emb_extractor = SpeakerExtraction(
                 results_dir=pool_vec_path,
                 devices=[self.device],

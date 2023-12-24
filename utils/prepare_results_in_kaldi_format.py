@@ -93,8 +93,6 @@ def split_vctk_into_common_and_diverse(dataset, output_path, orig_data_path, cop
         for file in copy_files:
             copy(orig_data_path / split / file, output_path / f'{split}{anon_suffix}' / file)
     if anon:
-        common_utts = read_kaldi_format(orig_data_path / common_split / 'wav.scp', return_as_dict=False)[0]
-        diverse_utts = read_kaldi_format(orig_data_path / diverse_split / 'wav.scp', return_as_dict=False)[0]
         spk2gender = read_kaldi_format(out_data_split / 'spk2gender')
         wav_scp = read_kaldi_format(out_data_split / 'wav.scp')
         utt2dur = read_kaldi_format(out_data_split / 'utt2dur')

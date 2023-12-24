@@ -26,7 +26,7 @@ class SpeakerExtraction:
         self.save_intermediate = save_intermediate
         self.force_compute = force_compute if force_compute else settings.get('force_compute_extraction', False)
 
-        self.embed_model_path = settings['embed_model_path']
+        self.emb_model_path = settings['emb_model_path']
         self.vec_type = settings['vec_type']
         self.emb_level = settings['emb_level']
 
@@ -42,7 +42,7 @@ class SpeakerExtraction:
 
         self.model_hparams = {
             'vec_type': self.vec_type,
-            'model_path': self.embed_model_path,
+            'model_path': self.emb_model_path,
         }
 
         self.extractors = [create_extractors(hparams=self.model_hparams, device=device) for device, process in zip(cycle(devices), range(len(devices)))]
