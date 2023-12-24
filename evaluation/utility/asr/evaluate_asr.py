@@ -13,48 +13,11 @@ from utils import read_kaldi_format
 
 
 def evaluate_asr(eval_datasets, eval_data_dir, params, model_path, libri_dir, anon_data_suffix, device, backend):
-    if backend == 'espnet':
-        asr_eval_espnet_sh(eval_datasets=eval_datasets, eval_data_dir=eval_data_dir, params=params,
-                           model_path=model_path, libri_dir=libri_dir, anon_data_suffix=anon_data_suffix)
-    elif backend == 'speechbrain':
+    if backend == 'speechbrain':
         asr_eval_speechbrain(eval_datasets=eval_datasets, eval_data_dir=eval_data_dir, params=params,
                              model_path=model_path, anon_data_suffix=anon_data_suffix, device=device)
     else:
-        raise ValueError(f'Unknown backend {backend} for ASR evaluation. Available backends: espnet, speechbrain.')
-
-
-def asr_eval_espnet_sh(eval_datasets, eval_data_dir, params, model_path, libri_dir, anon_data_suffix):
-    print(f'Use ASR model for evaluation: {model_path}')
-    test_sets = []
-
-    for asr_dataset in eval_datasets:
-        anon_asr_dataset = f'{asr_dataset}_{anon_data_suffix}'
-        test_sets.append(str(eval_data_dir / asr_dataset))
-        test_sets.append(str(eval_data_dir / anon_asr_dataset))
-
-    ngpu = min(params.get('num_gpus', 0), torch.cuda.device_count())  # cannot use more gpus than available
-
-    inference_params = [
-        '--ngpu', str(ngpu),
-        '--expdir', str(model_path),
-        '--asr_exp', str(model_path),
-        '--use_lm', 'true',
-        '--local_data_opts', str(libri_dir),
-        '--nbpe', '5000',
-        '--lm_config', str(params['lm_dir'] / 'config.yaml'),
-        '--lm_exp', str(params['lm_dir']),
-        '--inference_config', 'conf/decode_asr.yaml',
-        '--test_sets', ' '.join(test_sets),
-        '--skip_train', 'true',
-        '--gpu_inference', 'true',
-        '--inference_nj', str(params.get('nj', 5)),
-        '--inference_asr_model', 'valid.acc.ave.pth',
-    ]
-
-    cwd = Path.cwd()
-    os.chdir('evaluation/utility/asr')
-    subprocess.run(['./asr.sh'] + inference_params)
-    os.chdir(cwd)
+        raise ValueError(f'Unknown backend {backend} for ASR evaluation. Available backends: speechbrain.')
 
 
 def asr_eval_speechbrain(eval_datasets, eval_data_dir, params, model_path, anon_data_suffix, device):
