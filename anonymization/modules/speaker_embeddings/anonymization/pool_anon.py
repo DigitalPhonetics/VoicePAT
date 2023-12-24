@@ -149,7 +149,7 @@ class PoolAnonymizer(BaseAnonymizer):
         self.scaling = scaling
         self.stats_per_dim_path = stats_per_dim_path or Path()
 
-    def _load_pool_embeddings(self, pool_data_dir, pool_vec_path, embed_model_path):
+    def _load_pool_embeddings(self, pool_data_dir, pool_vec_path, emb_model_path):
         logger.debug(pool_data_dir)
         if pool_vec_path.exists():
             pool_embeddings = SpeakerEmbeddings(
@@ -157,7 +157,7 @@ class PoolAnonymizer(BaseAnonymizer):
             )
             pool_embeddings.load_vectors(pool_vec_path)
         else:
-            extraction_settings = {"vec_type": self.vec_type, "emb_level": "spk", "embed_model_path": embed_model_path}
+            extraction_settings = {"vec_type": self.vec_type, "emb_level": "spk", "emb_model_path": emb_model_path}
             emb_extractor = SpeakerExtraction(
                 results_dir=pool_vec_path,
                 devices=[self.device],
