@@ -91,7 +91,6 @@ def split_vctk_into_common_and_diverse(dataset, output_path, orig_data_path, cop
     for split in {common_split, diverse_split}:
         (output_path / f'{split}{anon_suffix}').mkdir(exist_ok=True, parents=True)
         for file in copy_files:
-            ##check again
             copy(orig_data_path / split / file, output_path / f'{split}{anon_suffix}' / file)
     if anon:
         spk2gender = read_kaldi_format(out_data_split / 'spk2gender')
