@@ -91,7 +91,7 @@ utility:
       train_config: evaluation/utility/asr/speechbrain_asr/asr_train/hparams/transformer.yaml
     
     evaluation:
-      eval_batchsize: 3
+      eval_batchsize: 2 # eval_batchsize(32g)=3 ->9h eval_batchsize=2->12h eval_batchsize(12GB)=1->24h
       model_dir: !ref <exp_dir>/<utility[asr][model_name]>
       results_dir: !ref <exp_dir>/<utility[asr][model_name]>
 
