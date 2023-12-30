@@ -1,5 +1,5 @@
 #!/bin/sh
-<<!
+
 for data_set in libri_dev libri_test vctk_dev vctk_test; do   
     dir=data/$data_set
     if [ ! -f $dir/wav.scp ] ; then
@@ -29,7 +29,7 @@ cd corpora
 wget --no-check-certificate https://www.openslr.org/resources/12/train-clean-360.tar.gz
 tar -xvzf train-clean-360.tar.gz
 cd ../
-!
+
 
 #Download kaldi format datadir and SpeechBrain pretrained ASV/ASR models
 wget https://github.com/DigitalPhonetics/VoicePAT/releases/download/v2/data.zip
