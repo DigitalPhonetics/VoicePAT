@@ -35,8 +35,8 @@ datasets:
     trials: [trials_f_common, trials_m_common]
 
 eval_steps:  # all metrics in this list will be computed in the evaluation. Remove entry to skip
-  #privacy:
-  #  - asv
+  privacy:
+   - asv
   utility:
    - asr
    - gvd
