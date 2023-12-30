@@ -2,7 +2,7 @@
 
 set -e
 
-
+#Install requirements for B2 generation and evaluation
 conda_url=https://repo.anaconda.com/miniconda/Miniconda3-py38_4.10.3-Linux-x86_64.sh
 venv_dir=$PWD/venv
 
