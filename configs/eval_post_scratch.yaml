@@ -101,6 +101,7 @@ utility:
       model_dir: !ref <privacy[asv][model_dir]>
       vec_type: !ref <privacy[asv][vec_type]>
       evaluation:
+        plda: !ref <privacy[asv][evaluation][plda]>
         distance: !ref <privacy[asv][evaluation][distance]>
     results_dir: !ref <privacy[asv][model_dir]>  # path to results dir for GVD computation
     recompute: false  # recompute similarity matrices in any case (true) or skip if matrices exist (false)
