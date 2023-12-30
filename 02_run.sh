@@ -8,7 +8,7 @@ source env.sh
 python run_anonymization_dsp.py --config anon_dsp.yaml
 
 #perform libri/vctk dev+test pre evaluation using pretrained ASV/ASR models
-#ASV-20mins, ASR-9hours if eval_batchsize=3, set evel_batchsize=2 if OOM
+#ASV-20mins, ASR-9hours if eval_batchsize=3, ASR-12hours if evel_batchsize=2 (default)
 python run_evaluation.py --config eval_pre.yaml
 
 
