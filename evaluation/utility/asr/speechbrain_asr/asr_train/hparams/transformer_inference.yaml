@@ -149,6 +149,6 @@ modules:
 pretrainer: !new:speechbrain.utils.parameter_transfer.Pretrainer
    loadables:
       normalizer: !ref <normalizer>
-      asr: !ref <asr_model>
+      model: !ref <asr_model>
       lm: !ref <lm_model>
       tokenizer: !ref <tokenizer>

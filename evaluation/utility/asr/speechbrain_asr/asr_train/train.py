@@ -33,7 +33,6 @@ Authors
  * Samuele Cornell 2020, 2021, 2022
  * Titouan Parcollet 2021, 2022
 """
-
 import os
 import sys
 import torch
@@ -45,6 +44,12 @@ from speechbrain.utils.distributed import run_on_main, if_main_process
 
 logger = logging.getLogger(__name__)
 
+def _convert_to_yaml(overrides):
+    # convert dict to yaml for overrides
+    yaml_string = ""
+    for key in overrides:
+        yaml_string += str(key) +': ' +str(overrides[key]) + '\n'
+    return yaml_string.strip()
 
 # Define training procedure
 class ASR(sb.core.Brain):
@@ -192,6 +197,13 @@ class ASR(sb.core.Brain):
                 or stage == sb.Stage.TEST
             ):
                 stage_stats["WER"] = self.wer_metric.summarize("error_rate")
+        
+        self.checkpointer.save_and_keep_only(
+                name=epoch,
+                meta={"loss": stage_stats["loss"], "epoch": epoch},
+                max_keys=["loss"],
+                num_to_keep=10,
+            )
 
         # log stats and save checkpoint at end-of-epoch
         if stage == sb.Stage.VALID:
@@ -312,25 +324,8 @@ def dataio_prepare(hparams):
         raise NotImplementedError(
             "sorting must be random, ascending or descending"
         )
-    valid_data = sb.dataio.dataset.DynamicItemDataset.from_csv(
-        csv_path=hparams["valid_csv"], replacements={"data_root": data_folder},
-    )
-    valid_data = valid_data.filtered_sorted(sort_key="duration")
-
-    # test is separate
-    test_datasets = {}
-    for csv_file in hparams["test_csv"]:
-        name = Path(csv_file).stem
-        test_datasets[name] = sb.dataio.dataset.DynamicItemDataset.from_csv(
-            csv_path=csv_file, replacements={"data_root": data_folder}
-        )
-        test_datasets[name] = test_datasets[name].filtered_sorted(
-            sort_key="duration"
-        )
-
-    datasets = [train_data, valid_data] + [i for k, i in test_datasets.items()]
-    valtest_datasets = [valid_data] + [i for k, i in test_datasets.items()]
-
+    datasets = [train_data]
+    
     # We get the tokenizer as we need it to encode the labels when creating
     # mini-batches.
     tokenizer = hparams["tokenizer"]
@@ -342,7 +337,6 @@ def dataio_prepare(hparams):
         sig = sb.dataio.dataio.read_audio(wav)
         return sig
 
-    sb.dataio.dataset.add_dynamic_item(valtest_datasets, audio_pipeline)
 
     @sb.utils.data_pipeline.takes("wav")
     @sb.utils.data_pipeline.provides("sig")
@@ -384,7 +378,7 @@ def dataio_prepare(hparams):
 
     # 5. If Dynamic Batching is used, we instantiate the needed samplers.
     train_batch_sampler = None
-    valid_batch_sampler = None
+    #valid_batch_sampler = None
     if hparams["dynamic_batching"]:
         from speechbrain.dataio.sampler import DynamicBatchSampler  # noqa
 
@@ -401,41 +395,33 @@ def dataio_prepare(hparams):
             max_batch_ex=dynamic_hparams["max_batch_ex"],
         )
 
-        valid_batch_sampler = DynamicBatchSampler(
-            valid_data,
-            dynamic_hparams["max_batch_len_val"],
-            num_buckets=num_buckets,
-            length_func=lambda x: x["duration"],
-            shuffle=dynamic_hparams["shuffle_ex"],
-            batch_ordering=dynamic_hparams["batch_ordering"],
-        )
-
-    return (
+        return (
         train_data,
-        valid_data,
-        test_datasets,
         tokenizer,
         train_batch_sampler,
-        valid_batch_sampler,
     )
 
+def train_speechbrain_asr(config_file, hparams_file, run_opts):
+    # This flag enables the inbuilt cudnn auto-tuner
+    torch.backends.cudnn.benchmark = True
 
-if __name__ == "__main__":
-    # CLI:
-    hparams_file, run_opts, overrides = sb.parse_arguments(sys.argv[1:])
-    with open(hparams_file) as fin:
-        hparams = load_hyperpyyaml(fin, overrides)
-
-    # create ddp_group with the right communication protocol
+    # Initialize ddp (useful only for multi-GPU DDP training)
     sb.utils.distributed.ddp_init_group(run_opts)
 
+    # Convert dict to yaml for overrides"""
+    overrides = _convert_to_yaml(hparams_file)
+
+    with open(config_file) as f:
+        hparams = load_hyperpyyaml(f, overrides)
+
     # 1.  # Dataset prep (parsing Librispeech)
-    from librispeech_prepare import prepare_librispeech  # noqa
+    from .librispeech_prepare import prepare_librispeech  # noqa
 
     # Create experiment directory
+    print(hparams["output_folder"])
     sb.create_experiment_directory(
         experiment_directory=hparams["output_folder"],
-        hyperparams_to_save=hparams_file,
+        hyperparams_to_save=config_file,
         overrides=overrides,
     )
 
@@ -445,23 +431,19 @@ if __name__ == "__main__":
         kwargs={
             "data_folder": hparams["data_folder"],
             "tr_splits": hparams["train_splits"],
-            "dev_splits": hparams["dev_splits"],
-            "te_splits": hparams["test_splits"],
             "save_folder": hparams["output_folder"],
             "merge_lst": hparams["train_splits"],
             "merge_name": "train.csv",
             "skip_prep": hparams["skip_prep"],
+            "anon": hparams["anon"],
         },
     )
 
     # here we create the datasets objects as well as tokenization and encoding
     (
         train_data,
-        valid_data,
-        test_datasets,
         tokenizer,
         train_bsampler,
-        valid_bsampler,
     ) = dataio_prepare(hparams)
 
     # We download the pretrained LM from HuggingFace (or elsewhere depending on
@@ -481,7 +463,6 @@ if __name__ == "__main__":
     # adding objects to trainer:
     asr_brain.tokenizer = hparams["tokenizer"]
     train_dataloader_opts = hparams["train_dataloader_opts"]
-    valid_dataloader_opts = hparams["valid_dataloader_opts"]
 
     if train_bsampler is not None:
         collate_fn = None
@@ -496,35 +477,11 @@ if __name__ == "__main__":
         if collate_fn is not None:
             train_dataloader_opts["collate_fn"] = collate_fn
 
-    if valid_bsampler is not None:
-        collate_fn = None
-        if "collate_fn" in valid_dataloader_opts:
-            collate_fn = valid_dataloader_opts["collate_fn"]
-
-        valid_dataloader_opts = {"batch_sampler": valid_bsampler}
-
-        if collate_fn is not None:
-            valid_dataloader_opts["collate_fn"] = collate_fn
 
     # Training
     asr_brain.fit(
         asr_brain.hparams.epoch_counter,
         train_data,
-        valid_data,
         train_loader_kwargs=train_dataloader_opts,
-        valid_loader_kwargs=valid_dataloader_opts,
     )
 
-    # Testing
-    if not os.path.exists(hparams["output_wer_folder"]):
-        os.makedirs(hparams["output_wer_folder"])
-
-    for k in test_datasets.keys():  # keys are test_clean, test_other etc
-        asr_brain.hparams.test_wer_file = os.path.join(
-            hparams["output_wer_folder"], f"wer_{k}.txt"
-        )
-        asr_brain.evaluate(
-            test_datasets[k],
-            max_key="ACC",
-            test_loader_kwargs=hparams["test_dataloader_opts"],
-        )

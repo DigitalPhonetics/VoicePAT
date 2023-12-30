@@ -39,11 +39,11 @@ def process_data(dataset_path, anon_level, settings):
     path_wav_scp_out = output_path / 'wav.scp'
     with open(path_wav_scp_out, 'wt', encoding='utf-8') as writer:
         with ReadHelper(f'scp:{wav_scp}') as reader:
-            print(reader)
+            #print(reader)
             for utid, (freq, samples) in reader:
-                print(utid)
+                #print(utid)
                 output_file = os.path.join(output_path / 'wav', f'{utid}.wav')
-                print(output_file)
+                print(f'Generating {output_file}')
                 if os.path.exists(output_file):
                     print('file already exists')
                     continue
@@ -70,7 +70,7 @@ def process_data(dataset_path, anon_level, settings):
 def anonym(freq, samples, winLengthinms=20, shiftLengthinms=10, lp_order=20, mcadams=0.8):
 
 
-    print(mcadams)
+    #print(mcadams)
     eps = np.finfo(np.float32).eps
     samples = samples + eps
     

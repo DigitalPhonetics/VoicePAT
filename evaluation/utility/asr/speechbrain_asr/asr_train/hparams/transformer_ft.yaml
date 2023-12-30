@@ -23,8 +23,7 @@ train_log: !ref <output_folder>/train_log.txt
 # directory containing the lm.ckpt and tokenizer.ckpt may also be specified
 # instead. E.g if you want to use your own LM / tokenizer.
 pretrained_lm_tokenizer_path: speechbrain/asr-transformer-transformerlm-librispeech
-pretrained_path: None
-anon: false
+anon: true
 # Data files
 data_folder: !PLACEHOLDER # e.g., /path/to/LibriSpeech
 # If RIRS_NOISES dir exists in /localscratch/xxx_corpus/RIRS_NOISES
@@ -33,8 +32,8 @@ data_folder: !PLACEHOLDER # e.g., /path/to/LibriSpeech
 # data_folder_rirs: !ref <data_folder>
 #train_splits: ["train-clean-100", "train-clean-360", "train-other-500"]
 train_splits: !PLACEHOLDER
-dev_splits: ["dev-clean"]
-test_splits: ["test-clean", "test-other"]
+  #dev_splits: ["dev-clean"]
+  #test_splits: ["test-clean", "test-other"]
 skip_prep: False
 train_csv: !ref <output_folder>/train.csv
 valid_csv: !ref <output_folder>/dev-clean.csv
@@ -251,8 +250,13 @@ checkpointer: !new:speechbrain.utils.checkpoints.Checkpointer
         normalizer: !ref <normalize>
         counter: !ref <epoch_counter>
 
-epoch_counter: !new:speechbrain.utils.epoch_loop.EpochCounter
+#early stop
+epoch_counter: !new:speechbrain.utils.epoch_loop.EpochCounterWithStopper
     limit: !ref <number_of_epochs>
+    limit_to_stop: 10
+    limit_warmup: 2
+    direction: min
+
 
 normalize: !new:speechbrain.processing.features.InputNormalization
     norm_type: global
@@ -285,6 +289,8 @@ train_logger: !new:speechbrain.utils.train_logger.FileTrainLogger
 error_rate_computer: !name:speechbrain.utils.metric_stats.ErrorRateStats
 acc_computer: !name:speechbrain.utils.Accuracy.AccuracyStats
 
+
+pretrained_path: !PLACEHOLDER
 # The pretrainer allows a mapping between pretrained files and instances that
 # are declared in the yaml. E.g here, we will download the file lm.ckpt
 # and it will be loaded into "lm" which is pointing to the <lm_model> defined
@@ -294,6 +300,10 @@ pretrainer: !new:speechbrain.utils.parameter_transfer.Pretrainer
     loadables:
         lm: !ref <lm_model>
         tokenizer: !ref <tokenizer>
+        model:  !ref <model>
+        normalize: !ref <normalize>
     paths:
         lm: !ref <pretrained_lm_tokenizer_path>/lm.ckpt
         tokenizer: !ref <pretrained_lm_tokenizer_path>/tokenizer.ckpt
+        model: !ref <pretrained_path>/model.ckpt
+        normalize: !ref <pretrained_path>/normalizer.ckpt

@@ -1,5 +1,4 @@
 from utils import save_kaldi_format
-from jiwer import wer
 from copy import deepcopy
 
 from speechbrain.pretrained import EncoderASR, EncoderDecoderASR
@@ -41,9 +40,10 @@ class MyDataset(torch.utils.data.Dataset):
 
 class InferenceSpeechBrainASR:
 
-    def __init__(self, model_url, model_path, device):
+    def __init__(self, model_path, device):
         self.device = device
-        self.asr_model = EncoderDecoderASR.from_hparams(source=model_url,
+        print(f'Use ASR model for evaluation: {model_path}')
+        self.asr_model = EncoderDecoderASR.from_hparams(source=model_path,
                                                         hparams_file='transformer_inference.yaml',
                                                         savedir=model_path, run_opts={'device': self.device})
 
@@ -90,7 +90,6 @@ class InferenceSpeechBrainASR:
             predicted.append(hyp_texts[utt_id])
 
         wer_stats.append(ids=ids, predict=self.plain_text_key(predicted), target=self.plain_text_key(targets))
-        print(f'WER jiwer: {wer(reference=targets, hypothesis=predicted)}')
         out_file.parent.mkdir(exist_ok=True, parents=True)
 
         with open(out_file, 'w') as f:

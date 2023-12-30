@@ -1,0 +1,19 @@
+matplotlib==3.4.3
+numpy==1.17.3
+scipy==1.5.2
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==2.0.1+cu117
+torchvision==0.15.2+cu117
+torchaudio==2.0.2+cu117
+librosa==0.8.1
+tensorboard
+soundfile
+matplotlib
+ffmpeg
+tqdm
+pandas
+numba==0.53
+speechbrain
+pyloudnorm
+kaldiio
+noisereduce

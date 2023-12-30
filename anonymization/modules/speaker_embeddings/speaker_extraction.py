@@ -9,7 +9,7 @@ from torch.multiprocessing import set_start_method
 from itertools import repeat, cycle
 import numpy as np
 
-from .extraction.embedding_methods import SpeechBrainVectors, StyleEmbeddings
+from .extraction.embedding_methods import SpeechBrainVectors #, StyleEmbeddings
 from .extraction.ims_speaker_extraction_methods import normalize_wave
 from .speaker_embeddings import SpeakerEmbeddings
 from utils import read_kaldi_format

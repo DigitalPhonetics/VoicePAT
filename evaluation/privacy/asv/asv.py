@@ -7,7 +7,7 @@ from speechbrain.utils.metric_stats import EER
 from sklearn.metrics.pairwise import cosine_distances
 import pandas as pd
 
-from anonymization.modules.speaker_embeddings.anonymization.utils.plda_model import PLDAModel
+#from anonymization.modules.speaker_embeddings.anonymization.utils.plda_model import PLDAModel
 from anonymization.modules.speaker_embeddings import SpeakerExtraction
 from utils import write_table, read_kaldi_format, save_kaldi_format
 
