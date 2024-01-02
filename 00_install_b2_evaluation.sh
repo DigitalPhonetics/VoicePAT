@@ -22,7 +22,6 @@ if [ ! -f $mark ]; then
   conda install -c conda-forge libflac -y || exit 1 
   touch $mark
 fi
-echo "if [ \$(which python) != $venv_dir/bin/python ]; then source $venv_dir/bin/activate; fi" > env.sh
-
+echo "if [ ! -x \"\$(command -v python)\" ] || [ \$(which python) != $venv_dir/bin/python ]; then source $venv_dir/bin/activate; fi" > env.sh
 
 
