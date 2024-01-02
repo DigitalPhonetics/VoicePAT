@@ -19,6 +19,7 @@ if [ ! -f $mark ]; then
   . $venv_dir/bin/activate
   echo 'Installing python dependencies'
   pip install -r requirements_b2_evaluation.txt || exit 1
+  conda install -c conda-forge libflac -y || exit 1 
   touch $mark
 fi
 echo "if [ \$(which python) != $venv_dir/bin/python ]; then source $venv_dir/bin/activate; fi" > env.sh
