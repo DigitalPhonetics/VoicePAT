@@ -6,7 +6,7 @@ from collections import defaultdict
 from pathlib import Path
 import pandas as pd
 from typing import List
-
+import multiprocessing
 parser = ArgumentParser()
 parser.add_argument('--config', default='config_eval.yaml')
 parser.add_argument('--gpu_ids', default='0')
@@ -120,6 +120,7 @@ def get_eval_asr_datasets(datasets_list, eval_data_dir, anon_suffix):
 
 
 if __name__ == '__main__':
+    multiprocessing.set_start_method("fork",force=True)
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s- %(levelname)s - %(message)s')
 
     params = parse_yaml(Path('configs', args.config))
