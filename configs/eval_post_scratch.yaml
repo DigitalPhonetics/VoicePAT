@@ -39,7 +39,7 @@ eval_steps:  # all metrics in this list will be computed in the evaluation. Remo
    - asv
   utility:
    - asr
-   - gvd
+   #- gvd
 
 anon_data_suffix: dsp  # suffix for dataset to signal that it is anonymized
 eval_data_dir: data  # path to anonymized evaluation data in kaldi format, e.g. <eval_data_dir>/libri_test_enrolls/wav.scp etc.
