@@ -21,7 +21,7 @@ if [ ! -f $mark ]; then
   conda install -c conda-forge libflac -y || exit 1 
   conda install -c conda-forge python-sounddevice -y || exit 1
   conda install -c conda-forge cvxopt -y || exit 1
-  conda install -c conda-forge typeguard==2.13.3 -y || exit 1
+  conda install -c conda-forge typeguard==2.13.3 -y || exit 1 ## indicate version  
   pip install -r requirements_xx.txt || exit 1
   touch $mark
 fi
