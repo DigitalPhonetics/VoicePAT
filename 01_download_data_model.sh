@@ -36,3 +36,17 @@ wget https://github.com/DigitalPhonetics/VoicePAT/releases/download/v2/data.zip
 unzip data.zip
 wget https://github.com/DigitalPhonetics/VoicePAT/releases/download/v2/pre_model.zip
 unzip pre_model.zip
+
+#Download GAN pre-models
+mkdir -p models
+wget -q -O models/anonymization.zip https://github.com/DigitalPhonetics/speaker-anonymization/releases/download/v2.0/anonymization.zip
+wget -q -O models/asr.zip https://github.com/DigitalPhonetics/speaker-anonymization/releases/download/v2.0/asr.zip
+wget -q -O models/tts.zip https://github.com/DigitalPhonetics/speaker-anonymization/releases/download/v2.0/tts.zip
+unzip -oq models/asr.zip -d models
+unzip -oq models/tts.zip -d models
+unzip -oq models/anonymization.zip -d models
+rm models/*.zip
+
+
+
+

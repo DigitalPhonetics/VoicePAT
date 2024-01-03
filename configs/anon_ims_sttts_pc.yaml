@@ -1,14 +1,37 @@
 root_dir : ..
-data_dir: !PLACEHOLDER
+data_dir: data
 save_intermediate: true
 save_output: true
 
-results_dir: !PLACEHOLDER # TODO adjust path, e.g. <root_dir>/results
-models_dir:  !PLACEHOLDER  # TODO adjust path, e.g. <root_dir>/models
+results_dir: exp/gan_anon/ # TODO adjust path, e.g. <root_dir>/results
+models_dir:  models  # TODO adjust path, e.g. <root_dir>/models
 vectors_dir: !ref <root_dir>/results/original_speaker_embeddings
 
 force_compute_all: false
-datasets: !include:datasets_vpc2022_official_anon.yaml
+#datasets: !include:datasets_vpc2022_official_anon.yaml
+
+datasets:
+  - name: libri_dev
+    data: libri
+    set: dev
+    enrolls: [enrolls]
+    trials: [trials_f, trials_m]
+  - name: libri_test
+    data: libri
+    set: test
+    enrolls: [enrolls]
+    trials: [trials_f, trials_m]
+  - name: vctk_dev
+    data: vctk
+    set: dev
+    enrolls: [enrolls]
+    trials: [trials_f_all, trials_m_all]
+  - name: vctk_test
+    data: vctk
+    set: test
+    enrolls: [enrolls]
+    trials: [trials_f_all, trials_m_all]
+
 
 pipeline: sttts
 

@@ -3,6 +3,8 @@ source env.sh
 
 #GPU 1 A100
 
+
+
 #generate b2 anonymized audio (libri/vctk dev+test set & libri-360h)
 #takes around 24hours
 python run_anonymization_dsp.py --config anon_dsp.yaml

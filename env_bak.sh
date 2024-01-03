@@ -1,0 +1,1 @@
+if [ ! -x "$(command -v python)" ] || [ $(which python) != /home/smg/zengchang/work_xx/VoicePAT_v7/VoicePAT/venv/bin/python ]; then source /home/smg/zengchang/work_xx/VoicePAT_v7/VoicePAT/venv/bin/activate; fi

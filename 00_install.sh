@@ -18,8 +18,11 @@ if [ ! -f $mark ]; then
   sh $name -b -p $venv_dir || exit 1
   . $venv_dir/bin/activate
   echo 'Installing python dependencies'
-  pip install -r requirements_b2_evaluation.txt || exit 1
   conda install -c conda-forge libflac -y || exit 1 
+  conda install -c conda-forge python-sounddevice -y || exit 1
+  conda install -c conda-forge cvxopt -y || exit 1
+  conda install -c conda-forge typeguard==2.13.3 -y || exit 1
+  pip install -r requirements_xx.txt || exit 1
   touch $mark
 fi
 echo "if [ ! -x \"\$(command -v python)\" ] || [ \$(which python) != $venv_dir/bin/python ]; then source $venv_dir/bin/activate; fi" > env.sh

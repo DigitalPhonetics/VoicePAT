@@ -18,8 +18,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     config = parse_yaml(Path('configs', args.config))
-    # datasets = get_datasets(config)
-    datasets = {'train-clean-360': Path(config['data_dir'], 'train-clean-360')}
+    datasets = get_datasets(config)
+    #datasets = {'train-clean-360': Path(config['data_dir'], 'train-clean-360')}
 
     gpus = args.gpu_ids.split(',')
 
