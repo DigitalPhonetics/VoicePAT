@@ -23,6 +23,18 @@ if [ ! -f $mark ]; then
   conda install -c conda-forge cvxopt -y || exit 1
   conda install -c conda-forge typeguard==2.13.3 -y || exit 1 ## indicate version  
   pip install -r requirements_xx.txt || exit 1
+  url=https://github.com/espeak-ng/espeak-ng/releases/download/1.50/espeak-ng-1.50.tgz
+
+  #install espeak
+  cd ${venv_dir}
+  wget $url || exit 1
+  tar -xf espeak-ng-1.50.tgz
+  cd espeak-ng
+  ./autogen.sh
+  ./configure --prefix=$venv_dir
+  make
+  make install
+
   touch $mark
 fi
 echo "if [ ! -x \"\$(command -v python)\" ] || [ \$(which python) != $venv_dir/bin/python ]; then source $venv_dir/bin/activate; fi" > env.sh
