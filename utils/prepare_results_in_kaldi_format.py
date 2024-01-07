@@ -1,9 +1,27 @@
 from shutil import copy
 import torchaudio
+import os
 from collections import defaultdict
 
 from utils import save_kaldi_format, create_clean_dir, read_kaldi_format
 
+def get_anon_wav_scps(input_folder):
+    audio_dicts = {}
+
+    # List all subfolders in the input folder
+    subfolders = [f for f in os.listdir(input_folder) if os.path.isdir(os.path.join(input_folder, f))]
+
+    for subfolder in subfolders:
+        audio_dict = {}
+        subfolder_path = os.path.join(input_folder, subfolder)
+        audio_files = [f for f in os.listdir(subfolder_path) if f.endswith('.wav')]
+        for audio in audio_files:
+            name = os.path.splitext(audio)[0]
+            pat = os.path.join(subfolder_path, audio)
+            audio_dict[name] = pat
+        audio_dicts[subfolder] = audio_dict
+
+    return audio_dicts
 
 def prepare_evaluation_data(dataset_dict, anon_wav_scps, anon_vectors_path, output_path, anon_suffix='_anon'):
     trials_subs = defaultdict(list)
