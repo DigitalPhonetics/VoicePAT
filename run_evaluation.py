@@ -11,6 +11,8 @@ parser = ArgumentParser()
 parser.add_argument('--config', default='config_eval.yaml')
 parser.add_argument('--gpu_ids', default='0')
 args = parser.parse_args()
+logger = logging.getLogger(__name__)
+from datetime import datetime
 
 if 'CUDA_VISIBLE_DEVICES' not in os.environ:  # do not overwrite previously set devices
     os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
@@ -22,8 +24,7 @@ import shutil
 import itertools
 
 from evaluation import evaluate_asv, train_asv_eval, evaluate_asr, train_asr_eval, evaluate_gvd
-from utils import parse_yaml, find_asv_model_checkpoint, scan_checkpoint, combine_asr_data, split_vctk_into_common_and_diverse
-
+from utils import parse_yaml, find_asv_model_checkpoint, scan_checkpoint, combine_asr_data, split_vctk_into_common_and_diverse, get_datasets, prepare_evaluation_data, get_anon_wav_scps
 
 def get_evaluation_steps(params):
     eval_steps = {}
@@ -130,6 +131,20 @@ if __name__ == '__main__':
     anon_suffix = params['anon_data_suffix']
     eval_steps = get_evaluation_steps(params)
 
+    if "anon_data_dir" in params:
+        logger.info("Preparing datadir according to the Kaldi format.")
+        now = datetime.strftime(datetime.today(), "%d-%m-%y_%H:%M")
+        datasets = get_datasets(params)
+        anon_wav_scps = get_anon_wav_scps(params['anon_data_dir'])
+        output_path = params['exp_dir'] / 'formatted_data' / now
+        prepare_evaluation_data(
+            dataset_dict=datasets,
+            anon_wav_scps=anon_wav_scps,
+            anon_vectors_path=params['data_dir'],
+            anon_suffix='_' + anon_suffix,
+            output_path=output_path,
+        )
+        eval_data_dir = output_path
 
     eval_data_trials = get_eval_trial_datasets(params['datasets'])
     eval_data_trials = check_vctk_split(eval_data_trials, eval_data_dir=eval_data_dir, anon_suffix='_'+anon_suffix)
