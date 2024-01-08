@@ -5,7 +5,7 @@ set -e
 #Install requirements for B2 generation and evaluation
 conda_url=https://repo.anaconda.com/miniconda/Miniconda3-py38_4.10.3-Linux-x86_64.sh
 venv_dir=$PWD/venv
-
+root_dir=$PWD
 mark=.done-venv
 if [ ! -f $mark ]; then
   echo 'Making python virtual environment'
@@ -34,7 +34,7 @@ if [ ! -f $mark ]; then
   ./configure --prefix=$venv_dir
   make
   make install
-  cd ../../
+  cd $root_dir
   touch $mark
 fi
 echo "if [ ! -x \"\$(command -v python)\" ] || [ \$(which python) != $venv_dir/bin/python ]; then source $venv_dir/bin/activate; fi" > env.sh
