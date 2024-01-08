@@ -7,7 +7,7 @@ Author
 ------
 Mirco Ravanelli, Ju-Chieh Chou, Loren Lugosch 2020
 """
-
+from pathlib import Path
 import os
 import csv
 import random
@@ -121,9 +121,17 @@ def prepare_librispeech(
             SUFFIX = '.wav'
         else:
             SUFFIX = '.flac'
-        wav_lst = get_all_files(
+        wav_file_temp = Path(data_folder + '/' + split + '/wav.scp')
+        
+        if wav_file_temp.exists():
+            logger.info(" %s/wav.scp exists, use wav.scp to create csv " % data_folder)
+            with open(wav_file_temp, 'r') as file:
+                wav_lst = [line.split()[1] for line in file]
+        else:
+            logger.info(" %s/wav.scp is not exist, find audio files under the folder to create csv " % data_folder)
+            wav_lst = get_all_files(
             os.path.join(data_folder, split), match_and=[SUFFIX]
-        )
+            )
 
         text_lst = get_all_files(
             os.path.join(data_folder, split), match_and=["text"]
