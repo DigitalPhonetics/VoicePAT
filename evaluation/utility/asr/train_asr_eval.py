@@ -23,7 +23,7 @@ def asr_train_speechbrain(train_params):
         'data_folder': str(train_params['train_data_dir']),
         'output_folder': str(train_params['model_dir']),
         'pretrained_path': str(train_params['pretrained_model']),
-        'train_splits': train_params['train_splits']
+        'train_splits': [train_params['train_splits']]
     }
 
     config = train_params['train_config']
