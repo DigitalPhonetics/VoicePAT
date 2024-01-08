@@ -34,7 +34,7 @@ if [ ! -f $mark ]; then
   ./configure --prefix=$venv_dir
   make
   make install
-
+  cd ../../
   touch $mark
 fi
 echo "if [ ! -x \"\$(command -v python)\" ] || [ \$(which python) != $venv_dir/bin/python ]; then source $venv_dir/bin/activate; fi" > env.sh
