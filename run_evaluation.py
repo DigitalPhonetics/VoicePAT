@@ -185,7 +185,8 @@ if __name__ == '__main__':
             if 'training' in asr_params:
                 asr_train_params = asr_params['training']
                 model_dir = asr_train_params['model_dir']
-                
+                if "anon_libri_360" in params:
+                    asr_train_params['train_data_dir'] = output_path
                 if not model_dir.exists() or asr_train_params.get('retrain', True) is True:
                     start_time = time.time()
                     print('Perform SpeechBrain ASR training')
