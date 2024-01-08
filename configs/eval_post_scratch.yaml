@@ -86,8 +86,8 @@ utility:
       batch_size: 32 # 1GPU 40GB
       epochs: 100
       anon: true
-      train_splits: ['train-clean-360-asv_dsp']
-      train_data_dir: !ref <eval_data_dir>/ # path to original or anonymized training data for ASV
+      train_splits: !ref train-clean-360-asv_<anon_data_suffix>  # datadir name of original or anonymized training data for ASR
+      train_data_dir: !ref <eval_data_dir>/ # path to original or anonymized training data for ASR
       train_config: evaluation/utility/asr/speechbrain_asr/asr_train/hparams/transformer.yaml
     
     evaluation:
