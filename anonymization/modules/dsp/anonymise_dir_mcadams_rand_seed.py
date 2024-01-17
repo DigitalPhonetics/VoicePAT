@@ -55,7 +55,7 @@ def process_data(dataset_path, anon_level, settings):
             for utid, (freq, samples) in tqdm(reader):
                 #print(utid)
                 output_file = os.path.join(output_path / 'wav', f'{utid}.wav')
-                print(f'Generating {output_file}')
+                #print(f'Generating {output_file}')
                 if os.path.exists(output_file):
                     print('file already exists')
                     continue
