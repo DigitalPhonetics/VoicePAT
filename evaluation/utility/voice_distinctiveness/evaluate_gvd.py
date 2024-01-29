@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 from .deid_gvd import VoiceDistinctiveness
 from utils import find_asv_model_checkpoint
@@ -51,6 +52,7 @@ def evaluate_gvd(eval_datasets, eval_data_dir, params, device, anon_data_suffix)
         raise ValueError('GVD: You either need to specify one "model_dir" for both original and anonymized data or '
                          'one "orig_model_dir" and one "anon_model_dir"!')
 
+    results = []
     for _, trial in eval_datasets:
         osp_set_folder = eval_data_dir / trial
         psp_set_folder = eval_data_dir / f'{trial}_{anon_data_suffix}'
@@ -78,3 +80,14 @@ def evaluate_gvd(eval_datasets, eval_data_dir, params, device, anon_data_suffix)
         with open(trial_out_dir / 'gain_of_voice_distinctiveness', 'w') as f:
             f.write(str(gvd_value))
         print(f'{trial} gvd={gvd_value}')
+        trial_info = trial.split('_')
+        gender = trial_info[3]
+        if 'common' in trial:
+            gender += '_common'
+        results.append({'dataset': trial_info[0], 'split': trial_info[1], 'gender': gender,
+                         'GVD': round(gvd_value, 3)})
+    results_df = pd.DataFrame(results)
+    print(results_df)
+    results_df.to_csv(save_dir / 'results.csv')
+    return results_df
+

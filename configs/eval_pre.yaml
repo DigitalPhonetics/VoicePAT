@@ -1,5 +1,6 @@
 root_dir: .
 exp_dir: !ref <root_dir>/exp
+results_summary_dir: !ref <exp_dir>/results_summary/eval_pre
 
 
 datasets:

@@ -1,7 +1,8 @@
 root_dir: .
 exp_dir: !ref <root_dir>/exp
-anon_data_dir: # TODO path to anonymized data (raw audios), e.g. <anon_data_dir>/libri_test_enrolls/*wav etc.
+anon_data_dir: !PLACEHOLDER # TODO path to anonymized data (raw audios), e.g. <anon_data_dir>/libri_test_enrolls/*wav etc.
 data_dir: data
+results_summary_dir: !ref <exp_dir>/results_summary/eval_pre
 
 datasets:
   - name: libri_dev

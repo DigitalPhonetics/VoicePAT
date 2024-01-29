@@ -7,8 +7,8 @@ from utils import find_asv_model_checkpoint
 def evaluate_asv(eval_datasets, eval_data_dir, params, device, anon_data_suffix, model_dir=None):
     backend = params.get('backend', 'speechbrain').lower()
     if backend == 'speechbrain':
-        asv_eval_speechbrain(eval_datasets=eval_datasets, eval_data_dir=eval_data_dir, params=params, device=device,
-                             anon_data_suffix=anon_data_suffix, model_dir=model_dir)
+        return asv_eval_speechbrain(eval_datasets=eval_datasets, eval_data_dir=eval_data_dir, params=params,
+                                    device=device, anon_data_suffix=anon_data_suffix, model_dir=model_dir)
     else:
         raise ValueError(f'Unknown backend {backend} for ASR evaluation. Available backends: speechbrain.')
 
@@ -45,3 +45,4 @@ def asv_eval_speechbrain(eval_datasets, eval_data_dir, params, device, anon_data
     results_df = pd.DataFrame(results)
     print(results_df)
     results_df.to_csv(save_dir / 'results.csv')
+    return results_df

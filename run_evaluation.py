@@ -1,4 +1,4 @@
-# We need to set CUDA_VISIBLE_DEVICES before we import Pytorch so we will read all arguments directly on startup
+# We need to set CUDA_VISIBLE_DEVICES before we import Pytorch, so we will read all arguments directly on startup
 import logging
 import os
 from argparse import ArgumentParser
@@ -24,7 +24,8 @@ import shutil
 import itertools
 
 from evaluation import evaluate_asv, train_asv_eval, evaluate_asr, train_asr_eval, evaluate_gvd
-from utils import parse_yaml, find_asv_model_checkpoint, scan_checkpoint, combine_asr_data, split_vctk_into_common_and_diverse, get_datasets, prepare_evaluation_data, get_anon_wav_scps
+from utils import (parse_yaml, scan_checkpoint, combine_asr_data, split_vctk_into_common_and_diverse, get_datasets,
+                   prepare_evaluation_data, get_anon_wav_scps, save_yaml)
 
 def get_evaluation_steps(params):
     eval_steps = {}
@@ -120,6 +121,29 @@ def get_eval_asr_datasets(datasets_list, eval_data_dir, anon_suffix):
     return list(eval_data)
 
 
+def save_result_summary(out_dir, results_dict, config):
+    out_dir.mkdir(parents=True, exist_ok=True)
+    save_yaml(config, out_dir / 'config.yaml')
+
+    with open(out_dir / 'results.txt', 'w') as f:
+        f.write(f'---- Time: {datetime.strftime(datetime.today(), "%d-%m-%y_%H:%M")} ----\n')
+        if 'asv' in results_dict:
+            f.write('\n')
+            f.write('---- ASV results ----\n')
+            f.write(results_dict['asv'].sort_values(by=['dataset', 'split']).to_string())
+            f.write('\n')
+        if 'asr' in results_dict:
+            f.write('\n')
+            f.write('---- ASR results ----\n')
+            f.write(results_dict['asr'].sort_values(by=['dataset', 'split']).to_string())
+            f.write('\n')
+        if 'gvd' in results_dict:
+            f.write('\n')
+            f.write('---- GVD results ----\n')
+            f.write(results_dict['gvd'].sort_values(by=['dataset', 'split']).to_string())
+            f.write('\n')
+
+
 if __name__ == '__main__':
     multiprocessing.set_start_method("fork",force=True)
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s- %(levelname)s - %(message)s')
@@ -149,6 +173,7 @@ if __name__ == '__main__':
     eval_data_trials = get_eval_trial_datasets(params['datasets'])
     eval_data_trials = check_vctk_split(eval_data_trials, eval_data_dir=eval_data_dir, anon_suffix='_'+anon_suffix)
     eval_data_asr = get_eval_asr_datasets(params['datasets'], eval_data_dir=eval_data_dir, anon_suffix=anon_suffix)
+    results = {}
 
     # make sure given paths exist
     assert eval_data_dir.exists(), f'{eval_data_dir} does not exist'
@@ -170,8 +195,10 @@ if __name__ == '__main__':
             if 'evaluation' in asv_params:
                 logging.info('Perform ASV evaluation')
                 start_time = time.time()
-                evaluate_asv(eval_datasets=eval_data_trials, eval_data_dir=eval_data_dir, params=asv_params,
-                             device=device,  model_dir=model_dir, anon_data_suffix=anon_suffix)
+                asv_results = evaluate_asv(eval_datasets=eval_data_trials, eval_data_dir=eval_data_dir,
+                                           params=asv_params, device=device,  model_dir=model_dir,
+                                           anon_data_suffix=anon_suffix)
+                results['asv'] = asv_results
                 logging.info("--- EER computation time: %f min ---" % (float(time.time() - start_time) / 60))
 
     if 'utility' in eval_steps:
@@ -204,12 +231,13 @@ if __name__ == '__main__':
                 asr_model_path = scan_checkpoint(asr_model_path, 'CKPT')
 
                 if not asr_model_path:
-                    asr_model_path = model_dir
+                    asr_model_path = asr_eval_params['model_dir']
                 start_time = time.time()
                 print('Perform ASR evaluation')
-                evaluate_asr(eval_datasets=eval_data_asr, eval_data_dir=eval_data_dir, params=asr_eval_params,
-                             model_path=asr_model_path, anon_data_suffix=anon_suffix,
-                             device=device, backend=backend)
+                asr_results = evaluate_asr(eval_datasets=eval_data_asr, eval_data_dir=eval_data_dir,
+                                           params=asr_eval_params, model_path=asr_model_path,
+                                           anon_data_suffix=anon_suffix, device=device, backend=backend)
+                results['asr'] = asr_results
                 print("--- ASR evaluation time: %f min ---" % (float(time.time() - start_time) / 60))
 
 
@@ -217,6 +245,12 @@ if __name__ == '__main__':
             gvd_params = params['utility']['gvd']
             start_time = time.time()
             logging.info('Perform GVD evaluation')
-            evaluate_gvd(eval_datasets=eval_data_trials, eval_data_dir=eval_data_dir, params=gvd_params,
-                         device=device, anon_data_suffix=anon_suffix)
+            gvd_results = evaluate_gvd(eval_datasets=eval_data_trials, eval_data_dir=eval_data_dir, params=gvd_params,
+                                       device=device, anon_data_suffix=anon_suffix)
+            results['gvd'] = gvd_results
             logging.info("--- GVD  computation time: %f min ---" % (float(time.time() - start_time) / 60))
+
+    if results:
+        now = datetime.strftime(datetime.today(), "%d-%m-%y_%H:%M")
+        results_summary_dir = params.get('results_summary_dir', Path('exp', 'results_summary', now))
+        save_result_summary(out_dir=results_summary_dir, results_dict=results, config=params)

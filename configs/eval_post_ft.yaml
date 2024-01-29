@@ -1,6 +1,7 @@
 root_dir: .
 exp_dir: !ref <root_dir>/exp
 model_dir: ../models
+results_summary_dir: !ref <exp_dir>/results_summary/eval_post_ft
 
 datasets:
   - name: libri_dev

@@ -1,6 +1,5 @@
 from pathlib import Path
-import os
-import subprocess
+import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 
@@ -17,8 +16,8 @@ from utils import read_kaldi_format
 
 def evaluate_asr(eval_datasets, eval_data_dir, params, model_path, anon_data_suffix, device, backend):
     if backend == 'speechbrain':
-        asr_eval_speechbrain(eval_datasets=eval_datasets, eval_data_dir=eval_data_dir, params=params,
-                             model_path=model_path, anon_data_suffix=anon_data_suffix, device=device)
+        return asr_eval_speechbrain(eval_datasets=eval_datasets, eval_data_dir=eval_data_dir, params=params,
+                                    model_path=model_path, anon_data_suffix=anon_data_suffix, device=device)
     else:
         raise ValueError(f'Unknown backend {backend} for ASR evaluation. Available backends: speechbrain.')
 
@@ -28,6 +27,7 @@ def asr_eval_speechbrain(eval_datasets, eval_data_dir, params, model_path, anon_
     model = InferenceSpeechBrainASR(model_path=model_path, device=device)
     results_dir = params['results_dir']
     test_sets = eval_datasets + [f'{asr_dataset}_{anon_data_suffix}' for asr_dataset in eval_datasets]
+    results = []
 
 
     with torch.no_grad():
@@ -45,6 +45,14 @@ def asr_eval_speechbrain(eval_datasets, eval_data_dir, params, model_path, anon_
                 references = read_kaldi_format(Path(data_path, 'text'), values_as_string=True)
                 scores = model.compute_wer(ref_texts=references, hyp_texts=hypotheses, out_file=Path(results_dir,
                                                                                      test_set, 'wer'))
-            print(f'{test_set} - WER: {scores.summarize("error_rate")}')
+            wer = scores.summarize("error_rate")
+            test_set_info = test_set.split('_')
+            results.append({'dataset': test_set_info[0], 'split': test_set_info[1],
+                            'asr': 'anon' if 'anon' in test_set else 'original', 'WER': round(wer, 3)})
+            print(f'{test_set} - WER: {wer}')
+    results_df = pd.DataFrame(results)
+    print(results_df)
+    results_df.to_csv(results_dir / 'results.csv')
+    return results_df
 
 
