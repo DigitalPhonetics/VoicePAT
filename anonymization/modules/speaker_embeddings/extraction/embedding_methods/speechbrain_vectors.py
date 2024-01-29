@@ -16,7 +16,10 @@ class SpeechBrainVectors:
 
         if model_path is not None and model_path.exists():
             model_path = Path(model_path).absolute()
-            savedir = model_path.parent
+            if model_path.is_file():
+                savedir = model_path.parent
+            else:
+                savedir = model_path
             self.extractor = EncoderClassifier.from_hparams(
                     source=str(model_path), 
                     savedir=str(savedir),
