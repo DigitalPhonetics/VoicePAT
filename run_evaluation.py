@@ -164,7 +164,6 @@ if __name__ == '__main__':
         prepare_evaluation_data(
             dataset_dict=datasets,
             anon_wav_scps=anon_wav_scps,
-            anon_vectors_path=params['data_dir'],
             anon_suffix='_' + anon_suffix,
             output_path=output_path,
         )
