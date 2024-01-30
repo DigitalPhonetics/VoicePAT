@@ -88,21 +88,21 @@ def prepare_evaluation_data(dataset_dict, output_path, anon_wav_scps, anon_vecto
             for file in copy_files:
                 copy(orig_dataset_path / file, out_data_split / file)
 
-            if 'train-clean-360' in dataset:
-                orig_data_asv = orig_data_path / f'{dataset}-asv'
-                out_data_asv = output_path / f'{dataset}-asv{suffix}'
-                out_data_asv.mkdir(exist_ok=True, parents=True)
-
-                for file in ['text', 'wav.scp', 'utt2dur']:
-                    copy(out_data_split / file, out_data_asv / file)
-
-                for file in ['spk2utt', 'utt2spk']:
-                    copy(orig_data_asv / file, out_data_asv / file)
-
-                spk2gender = transform_spk2gender(session_spk2gender=read_kaldi_format(out_data_split / 'spk2gender'),
-                                                  session_utt2spk=read_kaldi_format(out_data_split / 'utt2spk'),
-                                                  global_utt2spk=read_kaldi_format(orig_data_asv / 'utt2spk'))
-                save_kaldi_format(spk2gender, out_data_asv / 'spk2gender')
+            # if 'train-clean-360' in dataset:
+            #     orig_data_asv = orig_data_path / f'{dataset}-asv'
+            #     out_data_asv = output_path / f'{dataset}-asv{suffix}'
+            #     out_data_asv.mkdir(exist_ok=True, parents=True)
+            #
+            #     for file in ['text', 'wav.scp', 'utt2dur']:
+            #         copy(out_data_split / file, out_data_asv / file)
+            #
+            #     for file in ['spk2utt', 'utt2spk']:
+            #         copy(orig_data_asv / file, out_data_asv / file)
+            #
+            #     spk2gender = transform_spk2gender(session_spk2gender=read_kaldi_format(out_data_split / 'spk2gender'),
+            #                                       session_utt2spk=read_kaldi_format(out_data_split / 'utt2spk'),
+            #                                       global_utt2spk=read_kaldi_format(orig_data_asv / 'utt2spk'))
+            #     save_kaldi_format(spk2gender, out_data_asv / 'spk2gender')
 
             if '_all' in dataset:
                 split_vctk_into_common_and_diverse(dataset=dataset, output_path=output_path,
