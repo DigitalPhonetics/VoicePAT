@@ -21,7 +21,7 @@ num_utt: !PLACEHOLDER
 num_spk: !PLACEHOLDER
 utt_selected_ways: !PLACEHOLDER
 anon: !PLACEHOLDER #True or False
-skip_prep: True
+skip_prep: False
 ckpt_interval_minutes: 15 # save checkpoint every N min
 
 # Training parameters
