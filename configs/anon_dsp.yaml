@@ -1,5 +1,5 @@
 root_dir : ..
-data_dir: !ref data  # TODO adjust path
+data_dir: data  # TODO adjust path
 save_output: true
 
 datasets:
@@ -26,7 +26,7 @@ datasets:
 
 
 dataset_libri_360: !ref <data_dir>/train-clean-360-asv
-results_dir: !ref results # TODO adjust path
+results_dir: results # TODO adjust path
 pipeline: dsp
 
 modules:
