@@ -9,7 +9,7 @@ import torchaudio
 from utils import read_kaldi_format
 
 
-class MyDataset(torch.utils.data.Dataset):
+class ASRDataset(torch.utils.data.Dataset):
     def __init__(self, wav_scp_file, asr_model):
         data = []
         for utt_id, wav_file in read_kaldi_format(wav_scp_file).items():

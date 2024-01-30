@@ -10,7 +10,7 @@ import torch.multiprocessing
 torch.multiprocessing.set_sharing_strategy('file_system')
 
 from .speechbrain_asr import InferenceSpeechBrainASR
-from .speechbrain_asr.inference import MyDataset
+from .speechbrain_asr.inference import ASRDataset
 from utils import read_kaldi_format
 
 
@@ -39,7 +39,7 @@ def asr_eval_speechbrain(eval_datasets, eval_data_dir, params, model_path, anon_
                 references = read_kaldi_format(Path(results_dir, test_set, 'text'), values_as_string=True)
                 scores = model.compute_wer(ref_texts=references, hyp_texts=hypotheses, out_file=Path(results_dir,test_set, 'wer'))
             else:
-                dataset = MyDataset(wav_scp_file=Path(data_path, 'wav.scp'), asr_model=model.asr_model)
+                dataset = ASRDataset(wav_scp_file=Path(data_path, 'wav.scp'), asr_model=model.asr_model)
                 dataloader = DataLoader(dataset, batch_size=params['eval_batchsize'], shuffle=False, num_workers=1, collate_fn=dataset.collate_fn)
                 hypotheses = model.transcribe_audios(data=dataloader, out_file=Path(results_dir, test_set, 'text'))
                 references = read_kaldi_format(Path(data_path, 'text'), values_as_string=True)
