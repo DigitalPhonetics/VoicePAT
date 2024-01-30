@@ -226,11 +226,12 @@ if __name__ == '__main__':
 
             if 'evaluation' in asr_params:
                 asr_eval_params = asr_params['evaluation']
-                asr_model_path = asr_eval_params['model_dir']
-                asr_model_path = scan_checkpoint(asr_model_path, 'CKPT')
+                model_path = asr_eval_params['model_dir']
+                asr_model_path = scan_checkpoint(model_path, 'CKPT') or model_path
 
-                if not asr_model_path:
-                    asr_model_path = asr_eval_params['model_dir']
+                if not model_path.exists():
+                    raise FileNotFoundError(f'ASR model {model_path} does not exist!')
+
                 start_time = time.time()
                 print('Perform ASR evaluation')
                 asr_results = evaluate_asr(eval_datasets=eval_data_asr, eval_data_dir=eval_data_dir,

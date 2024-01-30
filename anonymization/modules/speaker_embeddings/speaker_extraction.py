@@ -40,9 +40,13 @@ class SpeakerExtraction:
             if self.save_intermediate:
                 raise ValueError('Results dir must be specified in parameters or settings!')
 
+        model_dir = model_dir or self.emb_model_path
+        if not model_dir.exists():
+            raise FileNotFoundError(f'ASV model {model_dir} does not exist!')
+
         self.model_hparams = {
             'vec_type': self.vec_type,
-            'model_path': self.emb_model_path,
+            'model_path': model_dir or self.emb_model_path,
         }
 
         self.extractors = [create_extractors(hparams=self.model_hparams, device=device) for device, process in zip(cycle(devices), range(len(devices)))]
