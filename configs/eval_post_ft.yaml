@@ -14,26 +14,6 @@ datasets:
     set: test
     enrolls: [enrolls]
     trials: [trials_f, trials_m]
-  - name: vctk_dev
-    data: vctk
-    set: dev
-    enrolls: [enrolls]
-    trials: [trials_f, trials_m]
-  - name: vctk_dev_common
-    data: vctk
-    set: dev
-    enrolls: [enrolls]
-    trials: [trials_f_common, trials_m_common]
-  - name: vctk_test
-    data: vctk
-    set: test
-    enrolls: [enrolls]
-    trials: [trials_f, trials_m]
-  - name: vctk_test_common
-    data: vctk
-    set: test
-    enrolls: [enrolls]
-    trials: [trials_f_common, trials_m_common]
 
 eval_steps:  # all metrics in this list will be computed in the evaluation. Remove entry to skip
   privacy:

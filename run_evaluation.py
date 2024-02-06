@@ -24,7 +24,7 @@ import shutil
 import itertools
 
 from evaluation import evaluate_asv, train_asv_eval, evaluate_asr, train_asr_eval, evaluate_gvd
-from utils import (parse_yaml, scan_checkpoint, combine_asr_data, split_vctk_into_common_and_diverse, get_datasets,
+from utils import (parse_yaml, scan_checkpoint, combine_asr_data, get_datasets,
                    prepare_evaluation_data, get_anon_wav_scps, save_yaml)
 
 def get_evaluation_steps(params):
@@ -59,30 +59,6 @@ def get_eval_trial_datasets(datasets_list):
     return eval_pairs
 
 
-def check_vctk_split(data_trials, eval_data_dir, anon_suffix):
-    copy_files_for_orig = ['spk2utt', 'text', 'utt2spk', 'trials', 'spk2gender', 'wav.scp', 'utt2dur']
-    copy_files_for_anon = ['spk2utt', 'text', 'utt2spk', 'trials']
-    separated_data_trials = []
-
-    for enroll, trial in data_trials:
-        if 'vctk' in trial and '_all' in trial:
-            common_split = trial.replace('all', 'common')  # same sentences for all speakers
-            diverse_split = trial.replace('_all', '')  # different sentences for each speaker
-            if (not Path(eval_data_dir, common_split).exists() or \
-                    not Path(eval_data_dir, diverse_split).exists()):
-                split_vctk_into_common_and_diverse(dataset=trial, output_path=eval_data_dir, orig_data_path=eval_data_dir,
-                                                   copy_files=copy_files_for_orig, anon=False, anon_suffix=f'{anon_suffix}',
-                                                   out_data_split=Path(eval_data_dir, trial))
-            if not Path(eval_data_dir, f'{common_split}{anon_suffix}').exists() or \
-                not Path(eval_data_dir, f'{diverse_split}{anon_suffix}').exists():
-                split_vctk_into_common_and_diverse(dataset=trial, output_path=eval_data_dir, orig_data_path=eval_data_dir,
-                                                   copy_files=copy_files_for_anon, anon=True, anon_suffix=f'{anon_suffix}',
-                                                   out_data_split = Path(eval_data_dir, f'{trial}{anon_suffix}'))
-            separated_data_trials.append((enroll, common_split))
-            separated_data_trials.append((enroll, diverse_split))
-        else:
-            separated_data_trials.append((enroll, trial))
-    return separated_data_trials
 
 def check_anon_dir(datasets_list, eval_data_dir, anon_suffix):
     for dataset in datasets_list:
@@ -99,7 +75,7 @@ def get_eval_asr_datasets(datasets_list, eval_data_dir, anon_suffix):
     # combines the trial subsets (trial_f, trial_m) of each dataset into one asr dataset
     eval_data = set()
 
-    # in case one bigger dataset is divided into smaller parts (e.g. vctk_all into vctk and vctk_common) we need to
+    # in case one bigger dataset is divided into smaller parts we need to
     # collect all parts together to create one asr dataset for the whole instead of for each subpart
     collated_datasets = defaultdict(list)
     for dataset in datasets_list:
@@ -174,7 +150,6 @@ if __name__ == '__main__':
         eval_data_dir = output_path
 
     eval_data_trials = get_eval_trial_datasets(params['datasets'])
-    eval_data_trials = check_vctk_split(eval_data_trials, eval_data_dir=eval_data_dir, anon_suffix='_'+anon_suffix)
     eval_data_asr = get_eval_asr_datasets(params['datasets'], eval_data_dir=eval_data_dir, anon_suffix=anon_suffix)
     results = {}
 

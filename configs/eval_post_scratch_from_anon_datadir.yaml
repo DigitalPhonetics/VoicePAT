@@ -1,7 +1,7 @@
 root_dir: .
 exp_dir: !ref <root_dir>/exp
 
-anon_data_dir: results/dsp_anon # TODO path to anonymized data (raw audios), e.g. <anon_data_dir>/libri_test_enrolls/*wav etc.
+anon_data_dir: exp/dsp_anon # TODO path to anonymized data (raw audios), e.g. <anon_data_dir>/libri_test_enrolls/*wav etc.
 anon_data_suffix: dsp  # TODO  suffix for dataset to signal that it is anonymized
 train_data_name: train-clean-360 #train-clean-asv-part if you only use part of data
 data_dir: data
@@ -18,17 +18,6 @@ datasets:
     set: test
     enrolls: [enrolls]
     trials: [trials_f, trials_m]
-  - name: vctk_dev
-    data: vctk
-    set: dev
-    enrolls: [enrolls]
-    trials: [trials_f_all, trials_m_all]
-  - name: vctk_test
-    data: vctk
-    set: test
-    enrolls: [enrolls]
-    trials: [trials_f_all, trials_m_all]
-
 
 eval_steps:  # all metrics in this list will be computed in the evaluation. Remove entry to skip
   privacy:
