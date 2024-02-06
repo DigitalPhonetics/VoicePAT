@@ -1,5 +1,6 @@
 root_dir : ..
-data_dir: data  # TODO adjust path
+data_dir: data
+results_dir: exp/dsp_anon # TODO adjust path
 save_output: true
 
 datasets:
@@ -13,20 +14,9 @@ datasets:
     set: test
     enrolls: [enrolls]
     trials: [trials_f, trials_m]
-  - name: vctk_dev
-    data: vctk
-    set: dev
-    enrolls: [enrolls]
-    trials: [trials_f_all, trials_m_all]
-  - name: vctk_test
-    data: vctk
-    set: test
-    enrolls: [enrolls]
-    trials: [trials_f_all, trials_m_all]
 
 
-dataset_libri_360: !ref <data_dir>/train-clean-360-asv
-results_dir: results # TODO adjust path
+dataset_libri_360: !ref <data_dir>/train-clean-360
 pipeline: dsp
 
 modules:

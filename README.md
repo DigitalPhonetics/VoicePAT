@@ -21,7 +21,7 @@ You may modify entry `$results_dir` in config/anon_dsp.yaml, default value is `e
 ```
 python run_anonymization_dsp.py --config anon_dsp.yaml
 ```
-The anonymized audios will be saved to `$results_dir`, including 13 folders:
+The anonymized audios will be saved to `$results_dir`, including 7 folders:
 
 ```
   $results_dir/libri_dev_enrolls/*wav
@@ -31,14 +31,6 @@ The anonymized audios will be saved to `$results_dir`, including 13 folders:
   $results_dir/libri_test_enrolls/*wav
   $results_dir/libri_test_trials_m/*wav
   $results_dir/libri_test_trials_f/*wav
-
-  $results_dir/vctk_dev_enrolls/*wav
-  $results_dir/vctk_dev_trials_f_all/*wav
-  $results_dir/vctk_dev_trials_m_all/*wav
-
-  $results_dir/vctk_test_enrolls/*wav
-  $results_dir/vctk_test_trials_m_all/*wav
-  $results_dir/vctk_test_trials_f_all/*wav
 
   $results_dir/train-clean-360/*wav
 ```
@@ -60,7 +52,7 @@ Evaluation metrics includes:
   - Voice Distinctiveness ($G_{vd}$) by an pretrained ASV model trained on original 360h LibriSpeech dataset
 
 The tookit supports the evaluation for any anonymized data:
-1. prepare 13 anonymized folders each containing the anonymized wav files:
+1. prepare 7 anonymized folders each containing the anonymized wav files:
 ```
    libri_dev_enrolls/*wav
    libri_dev_trials_m/*wav
@@ -69,14 +61,6 @@ The tookit supports the evaluation for any anonymized data:
    libri_test_enrolls/*wav
    libri_test_trials_m/*wav
    libri_test_trials_f/*wav
-
-   vctk_dev_enrolls/*wav
-   vctk_dev_trials_f_all/*wav
-   vctk_dev_trials_m_all/*wav
-
-   vctk_test_enrolls/*wav
-   vctk_test_trials_m_all/*wav
-   vctk_test_trials_f_all/*wav
 
    train-clean-360/*wav
 ```

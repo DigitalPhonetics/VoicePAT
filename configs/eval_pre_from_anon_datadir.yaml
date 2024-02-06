@@ -3,7 +3,7 @@ exp_dir: !ref <root_dir>/exp
 #anon_data_dir: !PLACEHOLDER # TODO path to anonymized data (raw audios), e.g. <anon_data_dir>/libri_test_enrolls/*wav etc.
 anon_data_dir: exp/dsp_anon
 #anon_data_suffix: !PLACEHOLDER  # TODO suffix for dataset to signal that it is anonymized e.g. dsp, b1b, gan
-anon_data_suffix: b2
+anon_data_suffix: dsp
 data_dir: data
 results_summary_dir: !ref <exp_dir>/results_summary/eval_pre
 
@@ -18,16 +18,6 @@ datasets:
     set: test
     enrolls: [enrolls]
     trials: [trials_f, trials_m]
-  - name: vctk_dev
-    data: vctk
-    set: dev
-    enrolls: [enrolls]
-    trials: [trials_f_all, trials_m_all]
-  - name: vctk_test
-    data: vctk
-    set: test
-    enrolls: [enrolls]
-    trials: [trials_f_all, trials_m_all]
 
 
 eval_steps:  # all metrics in this list will be computed in the evaluation. Remove entry to skip
@@ -35,7 +25,6 @@ eval_steps:  # all metrics in this list will be computed in the evaluation. Remo
     - asv
   utility:
     - asr
-    - gvd
 
 eval_data_dir: data  # path to anonymized evaluation data in kaldi format, e.g. <eval_data_dir>/libri_test_enrolls/wav.scp etc.
 
@@ -62,13 +51,3 @@ utility:
       results_dir: !ref <exp_dir>/<utility[asr][model_name]>
 
 
-  gvd:
-    num_utt: all  # all or specific number, number of utterances per speaker
-    asv_params:  # settings for ASV using for GVD evaluation
-      model_dir: !ref <privacy[asv][model_dir]>
-      vec_type: !ref <privacy[asv][vec_type]>
-      evaluation:
-        plda: !ref <privacy[asv][evaluation][plda]>
-        distance: !ref <privacy[asv][evaluation][distance]>
-    results_dir: !ref <privacy[asv][model_dir]>  # path to results dir for GVD computation
-    recompute: false  # recompute similarity matrices in any case (true) or skip if matrices exist (false)
