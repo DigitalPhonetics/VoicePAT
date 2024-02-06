@@ -17,3 +17,4 @@ pypinyin
 espnet==202310
 espnet_model_zoo
 praat-parselmouth
+cvxopt
