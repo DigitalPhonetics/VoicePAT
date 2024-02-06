@@ -24,6 +24,7 @@ class DSPPipeline:
             print(f'{i + 1}/{len(datasets)}: Processing {dataset_name}...')
             process_data(dataset_path=dataset_path,
                          anon_level=self.modules_config['anon_level'],
+                         results_dir=self.config['results_dir'],
                          settings=self.modules_config)
             print('Done')
             
@@ -31,6 +32,7 @@ class DSPPipeline:
         if self.libri_360_data_dir:
             process_data(dataset_path=self.libri_360_data_dir, 
                     anon_level=self.modules_config['anon_level_libri_360'], 
+                    results_dir=self.config['results_dir'],
                     settings=self.modules_config)
         return
 

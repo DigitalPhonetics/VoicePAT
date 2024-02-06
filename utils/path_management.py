@@ -48,9 +48,12 @@ def get_datasets(config):
     data_dir = config.get('data_dir', None).expanduser() # if '~' is given in path then manually expand
     for dataset in config['datasets']:
         if data_dir:
-            for subset in dataset['enrolls'] + dataset['trials']:
-                dataset_name = f'{dataset["data"]}_{dataset["set"]}_{subset}'
-                datasets[dataset_name] = Path(data_dir, dataset_name)
+            if 'train-clean-360' in dataset['name']:
+                datasets[dataset['name']] = Path(data_dir, dataset['name'])
+            else:
+                for subset in dataset['enrolls'] + dataset['trials']:
+                    dataset_name = f'{dataset["data"]}_{dataset["set"]}_{subset}'
+                    datasets[dataset_name] = Path(data_dir, dataset_name)
         else:
             dataset_path = Path(dataset['name'])
             for subset in dataset['enrolls'] + dataset['trials']:

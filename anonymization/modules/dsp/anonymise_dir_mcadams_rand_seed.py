@@ -34,18 +34,19 @@ def hash_textstring(text):
     # sha256 is deterministic, using the first 8Bytes (32bits)
     return np.abs(int(hashlib.sha256(text.encode('utf-8')).hexdigest()[:8], 16))
 
-def process_data(dataset_path, anon_level, settings):
+def process_data(dataset_path, anon_level, results_dir, settings):
 
     utt2spk = None
     if anon_level == 'spk':
         utt2spk = load_utt2spk( dataset_path / 'utt2spk')
-
+    basename = os.path.basename(dataset_path)
     output_path = Path(str(dataset_path) + settings['anon_suffix'])
     if os.path.exists(output_path):
         shutil.rmtree(output_path)
     shutil.copytree(dataset_path, output_path)
-    if not os.path.exists(output_path /  'wav'):
-        os.makedirs(output_path / 'wav')
+    results_dir = results_dir / basename
+    if not os.path.exists(results_dir):
+        os.makedirs(results_dir)
     wav_scp = dataset_path / 'wav.scp'
     path_wav_scp_out = output_path / 'wav.scp'
     
@@ -54,7 +55,7 @@ def process_data(dataset_path, anon_level, settings):
             #print(reader)
             for utid, (freq, samples) in tqdm(reader):
                 #print(utid)
-                output_file = os.path.join(output_path / 'wav', f'{utid}.wav')
+                output_file = os.path.join(results_dir, f'{utid}.wav')
                 #print(f'Generating {output_file}')
                 if os.path.exists(output_file):
                     print('file already exists')

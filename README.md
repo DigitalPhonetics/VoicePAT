@@ -1,99 +1,100 @@
-# [VoicePAT: Voice Privacy Anonymization Toolkit](http://arxiv.org/abs/2309.08049)
+# Evaluation tookilt for VoicePrivacy Challenge 2024
 
-**Note: This repository and its documentation are still under construction but can already be used for both 
-anonymization and evaluation. We welcome all contributions to introduce more generation methods or evaluation metrics to the VoicePAT framework. 
-If you are interested in contributing, please leave comments on a GitHub issue.**
+## Install
 
-VoicePAT is a toolkit for speaker anonymization research. It is based on the framework(s) by the [VoicePrivacy Challenges](https://github.com/Voice-Privacy-Challenge/Voice-Privacy-Challenge-2022) but contains the following improvements:
+1. `git clone -b vpc  https://github.com/DigitalPhonetics/VoicePAT.git`
+2. `bash 00_install.sh`
+3. `source env.sh`
 
-* It consists of **two separate procedures for anonymization and evaluation**. This means that the generation of 
-  anonymized speech is independent of the evaluation of anonymization systems. Both processes do not need to be 
-  executed in the same run or with the same settings. Of course, you need to perform the anonymization of evaluation 
-  data with one system before you can evaluate it but this could have happened at an earlier time and with an 
-  external codebase.
-* Anonymization and evaluation procedures are **structured as pipelines** consisting of separate **modules**. Each 
-  module may have a selection of different models or algorithm to fulfill its role. The settings for each procedure 
-  / pipeline are defined exclusively in configuration files. See the *Usage* section below for more information.
-* **Evaluation models** have been exchanged by models based on [SpeechBrain](https://github.com/speechbrain/speechbrain/) and [ESPnet](https://github.com/espnet/espnet/) which are **more powerful** than the 
-  previous Kaldi-based models. Furthermore, we added new techniques to make evaluation significantly **more 
-  efficient**.
-* The framework is written in **Python**, making it easy to include and adapt other Python-based models, e.g., using 
-  PyTorch. When using the framework, you do not need in-depth knowledge about anything outside the Python realm 
-  (Disclaimer: While being written in Python, the ASR evaluation is currently included with an ESPnet-based model 
-  which in turn is based on Kaldi. However, you do not need to modify that part of the code for using or 
-  changing the ASR model and ESPnet is currently working on a Kaldi-free version.)
+## Download VPC data and pretrianed models
 
+`bash 01_download_data_model.sh` Password required, please register to get password.
 
-## Installation
+## Running the recipe
+The recipe uses [VoicePAT](https://github.com/DigitalPhonetics/VoicePAT) toolkit, consists of **two separate procedures for anonymization and evaluation**. This means that the generation of anonymized speech is independent of the evaluation of anonymization systems. Both processes do not need to be executed in the same run or with the same settings. 
 
-Requires `conda` for environment management. Installation of `mamba` is also recommended for speeding up the environment-related tasks. Simply clone the repository and run the following commands, a conda environment will be generated in the project root folder and the pretrained models will be downloaded.
-
-```bash
-sudo apt install libespeak-ng   # alternatively use your own package manager
-make install pretrained_models  
+### Anonymization: 
+The recipe supports B2 and [GAN-based](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=10096607) speaker anonymization systems.
+#### B2: Anonymization using McAdams coefficient (randomized version)
+This is the same baseline as the secondary baseline for the VoicePrivacy-2022. It does not require any training data and is based upon simple signal processing techniques using the McAdams coefficient.
+You may modify entry `$results_dir` in config/anon_dsp.yaml, default value is `exp/dsp_anon`
 ```
-
-The datasets have to be downloaded via the VoicePrivacy Challenge framework. Once the download is complete, the `.scp` files need to be converted to the absolute path, because they are relative to the challenge folder. Use [utils/relative_scp_to_abs.py](utils/relative_scp_to_abs.py) for this purpose. Then simply point `data_path` in the YAML configurations to the data folder of the VoicePrivacy Challenge framework.
-
-If you want to use the ESPnet-based ASR evaluation model, you additionally need to clone and install [ESPNet](https://github.com/espnet/espnet/) and insert the link to it in [evaluation/utility/asr/path.sh](evaluation/utility/asr/path.sh), e.g., ``MAIN_ROOT=~/espnet``.
-
-## Usage
-
-![](figures/framework.png)
-
-For using the toolkit with the existing methods, you can use the configuration files in [configs](configs). You can also add more modules and models to the code and create your own config by using the existing ones as template. The configuration files use HyperPyYAML syntax, for which a useful reference is available [here](https://colab.research.google.com/drive/1Pg9by4b6-8QD2iC0U7Ic3Vxq4GEwEdDz?usp=sharing).
-
-### Anonymization
-
-The framework currently contains only one pipeline and config for anonymization, [anon_ims_sttts_pc.yaml](configs/anon_ims_sttts_pc.yaml). If you are using this config, you need to modify at least the following entries:
-
-```YAML
-data_dir:    # path to original data in Kaldi-format for anonymization
-results_dir: # path to location for all (intermediate) results of the anonymization
-models_dir:  # path to models location
+python run_anonymization_dsp.py --config anon_dsp.yaml
 ```
-
-Running an anonymization pipeline is done like this:
+The anonymized audios will be saved to `$results_dir`, including 13 folders:
 
 ```
-python run_anonymization.py --config anon_ims_sttts_pc.yaml --gpu_ids 0,1 --force_compute
-```
-This will perform all computations that support parallel computing on the gpus with ID 0 and 1, and on GPU 0 
-otherwise. If no gpu_ids are specified, it will run only on GPU 0 or CPU, depending on whether cuda is available. 
-`--force_compute` causes all previous computations to be run again. In most cases, you can delete that flag from the 
-command to speed up the anonymization.
+  $results_dir/libri_dev_enrolls/*wav
+  $results_dir/libri_dev_trials_m/*wav
+  $results_dir/libri_dev_trials_f/*wav
 
-Pretrained models for this anonymization can be found at [https://github.
-com/DigitalPhonetics/speaker-anonymization/releases/tag/v2.0](https://github.com/DigitalPhonetics/speaker-anonymization/releases/tag/v2.0) and earlier releases.
+  $results_dir/libri_test_enrolls/*wav
+  $results_dir/libri_test_trials_m/*wav
+  $results_dir/libri_test_trials_f/*wav
+
+  $results_dir/vctk_dev_enrolls/*wav
+  $results_dir/vctk_dev_trials_f_all/*wav
+  $results_dir/vctk_dev_trials_m_all/*wav
+
+  $results_dir/vctk_test_enrolls/*wav
+  $results_dir/vctk_test_trials_m_all/*wav
+  $results_dir/vctk_test_trials_f_all/*wav
+
+  $results_dir/train-clean-360/*wav
+```
+
+#### GAN-based: Anonymization using Transformer-based ASR, FastSpeech2-based TTS and WGAN-based anonymizer.
+All the pretrained models downloaded by 01_download_data_model
+You may modify entry `$results_dir` in config/anon_ims_sttts_pc.yaml, default value is `exp/gan_anon`
+```
+python run_anonymization.py --config anon_ims_sttts_pc.yaml --gpu_ids 0  --force_compute True
+```
+The anonymized audios will be saved to `$results_dir`
+
 
 ### Evaluation
+Evaluation metrics includes:
+- Privacy: Equal error rate (EER) for Ignorant, lazy-informed, and semi-informed attackers
+- Utility:
+  - Word Error Rate (WER) by an pretrained ASR model trained on original 360h LibriSpeech dataset
+  - Voice Distinctiveness ($G_{vd}$) by an pretrained ASV model trained on original 360h LibriSpeech dataset
 
-All other config files in [configs](configs) can be used for evaluation with different settings. In these configs, you need to adapt at least
-
+The tookit supports the evaluation for any anonymized data:
+1. prepare 13 anonymized folders each containing the anonymized wav files:
 ```
-eval_data_dir: path to anonymized evaluation data in Kaldi-format
-asr/libri_dir: path to original LibriSpeech dataset
+   libri_dev_enrolls/*wav
+   libri_dev_trials_m/*wav
+   libri_dev_trials_f/*wav
+
+   libri_test_enrolls/*wav
+   libri_test_trials_m/*wav
+   libri_test_trials_f/*wav
+
+   vctk_dev_enrolls/*wav
+   vctk_dev_trials_f_all/*wav
+   vctk_dev_trials_m_all/*wav
+
+   vctk_test_enrolls/*wav
+   vctk_test_trials_m_all/*wav
+   vctk_test_trials_f_all/*wav
+
+   train-clean-360/*wav
 ```
-
-Running an evaluation pipeline is done like this:
-
+2. modify entries in configs/eval_pre_from_anon_datadir.yaml and configs/eval_post_scratch_from_anon_datadir.yaml :
 ```
-python run_evaluation.py --config eval_pre_ecapa_cos.yaml --gpu_ids 1,2,3
+anon_data_dir: !PLACEHOLDER # TODO path to anonymized data (raw audios), e.g. <anon_data_dir>/libri_test_enrolls/*wav etc.
+anon_data_suffix: !PLACEHOLDER  # suffix for dataset to signal that it is anonymized, e.g. b2, b1b, or gan
 ```
+3.
+  ```
+  python run_evaluation.py --config eval_pre_from_anon_datadir.yaml
+  python run_evaluation.py --config eval_post_scratch_from_anon_datadir.yaml
+  ```
 
-making the GPUs with IDs 1, 2 and 3 available to the process. If no GPU is specified, it will default to CUDA:0 or use all GPUs if cuda is available, or run on CPU otherwise.
 
-Pretrained evaluation models can be found in release v1.
 
-## Acknowledgements
 
-Several parts of this toolkit are based on or use code from external sources, i.e.,
 
-* [VoicePrivacy Challenge 2022](https://github.com/Voice-Privacy-Challenge/Voice-Privacy-Challenge-2022), [ESPnet](https://github.com/espnet/espnet/), [SpeechBrain](https://github.com/speechbrain/speechbrain/) for evaluation
-* the [GAN-based anonymization system by IMS (University of Stuttgart)](https://github.com/DigitalPhonetics/speaker-anonymization) 
-  for 
-  anonymization
 
-See the READMEs for [anonymization](anonymization/README.md) and [evaluation](evaluation/README.md) for more 
-information.
+
 

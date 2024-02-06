@@ -51,6 +51,8 @@ def get_eval_trial_datasets(datasets_list):
     eval_pairs = []
 
     for dataset in datasets_list:
+        if 'train-clean-360' in dataset['name']:
+            continue
         eval_pairs.extend([(f'{dataset["data"]}_{dataset["set"]}_{enroll}',
                             f'{dataset["data"]}_{dataset["set"]}_{trial}')
                            for enroll, trial in itertools.product(dataset['enrolls'], dataset['trials'])])
@@ -101,6 +103,8 @@ def get_eval_asr_datasets(datasets_list, eval_data_dir, anon_suffix):
     # collect all parts together to create one asr dataset for the whole instead of for each subpart
     collated_datasets = defaultdict(list)
     for dataset in datasets_list:
+        if 'train-clean-360' in dataset['name']:
+            continue
         asr_dataset_name = f'{dataset["data"]}_{dataset["set"]}_asr'
         collated_datasets[asr_dataset_name].append(dataset)
 
