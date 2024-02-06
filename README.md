@@ -13,6 +13,7 @@
 ## Running the recipe
 The recipe uses [VoicePAT](https://github.com/DigitalPhonetics/VoicePAT) toolkit, consists of **two separate procedures for anonymization and evaluation**. This means that the generation of anonymized speech is independent of the evaluation of anonymization systems. Both processes do not need to be executed in the same run or with the same settings. 
 
+
 ### Anonymization: 
 The recipe supports B2 and [GAN-based](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=10096607) speaker anonymization systems.
 #### B2: Anonymization using McAdams coefficient (randomized version)
@@ -75,7 +76,9 @@ anon_data_suffix: !PLACEHOLDER  # suffix for dataset to signal that it is anonym
   python run_evaluation.py --config eval_post_scratch_from_anon_datadir.yaml
   ```
 
-
+### B2 Anonymization + Evaluation 
+If you would like to generate B2 audio and evaluate it without modifying, or submit Python scripts separately, simply run
+`bash 02_run.sh`, then you can get the results for B2.
 
 
 
