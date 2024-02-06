@@ -17,7 +17,7 @@ The recipe uses [VoicePAT](https://github.com/DigitalPhonetics/VoicePAT) toolkit
 The recipe supports B2 and [GAN-based](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=10096607) speaker anonymization systems.
 #### B2: Anonymization using McAdams coefficient (randomized version)
 This is the same baseline as the secondary baseline for the VoicePrivacy-2022. It does not require any training data and is based upon simple signal processing techniques using the McAdams coefficient.
-You may modify entry `$results_dir` in config/anon_dsp.yaml, default value is `exp/dsp_anon`
+You may modify entry `$results_dir` in [config/anon_dsp.yaml](https://github.com/DigitalPhonetics/VoicePAT/blob/vpc/configs/anon_dsp.yaml), default value is `exp/dsp_anon`
 ```
 python run_anonymization_dsp.py --config anon_dsp.yaml
 ```
@@ -45,7 +45,7 @@ The anonymized audios will be saved to `$results_dir`, including 13 folders:
 
 #### GAN-based: Anonymization using Transformer-based ASR, FastSpeech2-based TTS and WGAN-based anonymizer.
 All the pretrained models downloaded by 01_download_data_model
-You may modify entry `$results_dir` in config/anon_ims_sttts_pc.yaml, default value is `exp/gan_anon`
+You may modify entry `$results_dir` in [config/anon_ims_sttts_pc.yaml](https://github.com/DigitalPhonetics/VoicePAT/blob/vpc/configs/anon_ims_sttts_pc.yaml), default value is `exp/gan_anon`
 ```
 python run_anonymization.py --config anon_ims_sttts_pc.yaml --gpu_ids 0  --force_compute True
 ```
@@ -80,12 +80,12 @@ The tookit supports the evaluation for any anonymized data:
 
    train-clean-360/*wav
 ```
-2. modify entries in configs/eval_pre_from_anon_datadir.yaml and configs/eval_post_scratch_from_anon_datadir.yaml :
+2. modify entries in [configs/eval_pre_from_anon_datadir.yaml](https://github.com/DigitalPhonetics/VoicePAT/blob/vpc/configs/eval_pre_from_anon_datadir.yaml) and [configs/eval_post_scratch_from_anon_datadir.yaml](https://github.com/DigitalPhonetics/VoicePAT/blob/vpc/configs/eval_pre_from_anon_datadir.yaml) :
 ```
 anon_data_dir: !PLACEHOLDER # TODO path to anonymized data (raw audios), e.g. <anon_data_dir>/libri_test_enrolls/*wav etc.
 anon_data_suffix: !PLACEHOLDER  # suffix for dataset to signal that it is anonymized, e.g. b2, b1b, or gan
 ```
-3.
+3. perform evaluations
   ```
   python run_evaluation.py --config eval_pre_from_anon_datadir.yaml
   python run_evaluation.py --config eval_post_scratch_from_anon_datadir.yaml
