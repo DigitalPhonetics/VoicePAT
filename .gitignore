@@ -2,6 +2,11 @@
 __pycache__/
 *.py[cod]
 *$py.class
+.done-*
+.micromamba/
+venv/
+env.sh
+espeak-ng-*
 
 # C extensions
 *.so
