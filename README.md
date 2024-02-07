@@ -1,12 +1,12 @@
 # Evaluation tookilt for VoicePrivacy Challenge 2024
 
-## Install
+## (Required) Install
 
 1. `git clone -b vpc  https://github.com/DigitalPhonetics/VoicePAT.git`
 2. `bash 00_install.sh`
 3. `source env.sh`
 
-## Download VPC data and pretrianed models
+## (Required) Download VPC data and pretrianed models
 
 `bash 01_download_data_model.sh` Password required, please register to get password.
 
