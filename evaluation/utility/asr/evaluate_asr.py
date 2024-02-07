@@ -48,7 +48,7 @@ def asr_eval_speechbrain(eval_datasets, eval_data_dir, params, model_path, anon_
             wer = scores.summarize("error_rate")
             test_set_info = test_set.split('_')
             results.append({'dataset': test_set_info[0], 'split': test_set_info[1],
-                            'asr': 'anon' if 'anon' in test_set else 'original', 'WER': round(wer, 3)})
+                            'asr': 'anon' if anon_data_suffix in test_set else 'original', 'WER': round(wer, 3)})
             print(f'{test_set} - WER: {wer}')
     results_df = pd.DataFrame(results)
     print(results_df)
