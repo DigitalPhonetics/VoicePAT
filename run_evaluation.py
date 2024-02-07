@@ -168,7 +168,7 @@ if __name__ == '__main__':
                     train_asv_eval(train_params=asv_train_params, output_dir=asv_params['model_dir'])
                     logging.info("ASV training time: %f min ---" % (float(time.time() - start_time) / 60))
                     model_dir = scan_checkpoint(model_dir, 'CKPT')
-                    shutil.copy('evaluation/privacy/asv/asv_train/hparams/ecapa/hyperparams.yaml', params['privacy']['asv']['model_dir'])
+                    shutil.copy('evaluation/privacy/asv/asv_train/hparams/ecapa/hyperparams.yaml', model_dir)
 
             if 'evaluation' in asv_params:
                 logging.info('Perform ASV evaluation')
