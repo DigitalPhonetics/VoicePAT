@@ -5,20 +5,34 @@
 Audio Security and Privacy Group, EURECOM
 modified version (N.T.)
 """
-import os
-import librosa
-import numpy as np
-import scipy
-import wave
-import argparse
-from pathlib import Path
-import matplotlib.pyplot as plt
-import random
-from kaldiio import ReadHelper
-import shutil
-import librosa.core.spectrum
-from tqdm import tqdm
+import functools
 import hashlib
+import itertools
+import librosa
+import librosa.core.spectrum
+import logging
+import multiprocessing
+import numba
+import numpy as np
+import os
+import random
+import scipy
+import scipy.signal
+import shutil
+import soundfile
+import time
+import wave
+
+from copy import deepcopy
+from itertools import repeat
+from kaldiio import ReadHelper
+from pathlib import Path
+from tqdm import tqdm
+from utils.data_io import read_kaldi_format
+
+multiprocessing.set_start_method('spawn', force=True)
+
+logger = logging.getLogger(__name__)
 
 def load_utt2spk(path):
     assert os.path.isfile(path), f'File does not exist {path}'
@@ -34,8 +48,17 @@ def hash_textstring(text):
     # sha256 is deterministic, using the first 8Bytes (32bits)
     return np.abs(int(hashlib.sha256(text.encode('utf-8')).hexdigest()[:8], 16))
 
-def process_data(dataset_path, anon_level, results_dir, settings):
+def process_data(dataset_path: Path, anon_level: str, results_dir: Path, settings: dict):
+    """
+        Process data (must be in Kaldi format) in dataset_path with 
+        B2 (McAdams coefficients-based) anonymization.
 
+        Args:
+            dataset_path (Path): Path to the dataset
+            anon_level (str): Level of anonymization, either 'spk' or 'utt'
+            results_dir (Path): Path to directory where results should be stored
+            settings (dict): Settings for anonymization
+    """
     utt2spk = None
     if anon_level == 'spk':
         utt2spk = load_utt2spk( dataset_path / 'utt2spk')
@@ -49,50 +72,63 @@ def process_data(dataset_path, anon_level, results_dir, settings):
         os.makedirs(results_dir)
     wav_scp = dataset_path / 'wav.scp'
     path_wav_scp_out = output_path / 'wav.scp'
-    
-    with open(path_wav_scp_out, 'wt', encoding='utf-8') as writer:
+
+    # get the number of utterances in the dataset
+    wavs = read_kaldi_format(wav_scp)
+    N = len(wavs)
+ 
+    if anon_level == 'spk':
+        # sample per speaker
+        seeds = map(lambda x: hash_textstring(utt2spk[x]), wavs.keys())
+        rngs = map(np.random.default_rng, seeds)
+        mcadams_coeffs = map(lambda x: x.uniform(settings['mc_coeff_min'], settings['mc_coeff_max']), rngs)
+    else:
+        # sample per utterance
+        rng = np.random.default_rng(hash_textstring('VPC2024'))
+        mcadams_coeffs = rng.uniform(settings['mc_coeff_min'], settings['mc_coeff_max'], N)
+
+    with multiprocessing.Pool(processes=(multiprocessing.cpu_count()+1)//2) as pool: # number of processes can be tuned
         with ReadHelper(f'scp:{wav_scp}') as reader:
-            #print(reader)
-            for utid, (freq, samples) in tqdm(reader):
-                #print(utid)
-                output_file = os.path.join(results_dir, f'{utid}.wav')
-                #print(f'Generating {output_file}')
-                if os.path.exists(output_file):
-                    print('file already exists')
-                    continue
+            fn = functools.partial(process_wav, settings=settings, output_path=str(results_dir))
+            scp_entries = pool.starmap(fn, tqdm(zip(mcadams_coeffs, reader), total=N), chunksize=10)
+    with open(path_wav_scp_out, 'wt', encoding='utf-8') as writer:
+        writer.writelines(scp_entries)    
+    logger.info('Done')
 
-                # convert from int16 to float
-                samples = samples / (np.iinfo(np.int16).max + 1)
-                
-                if anon_level == 'spk':
-                    assert utid in utt2spk, f'Failed to find speaker ID for utterance {utid}'
-                    spid = utt2spk[utid]
-                    random.seed(hash_textstring(spid))
-                rand_mc_coeff = random.uniform(settings['mc_coeff_min'], settings['mc_coeff_max'])
+def process_wav(mcadams, data, settings, output_path):
+    output_path = Path(output_path)
+    (utid, (freq, samples)) = data
+    output_file = output_path / f'{utid}.wav'
+    if output_file.exists():
+        logger.debug(f'File {output_file} already exists')
+        return f'{utid} {output_file}\n'
 
-                samples = anonym_v2(freq=freq, samples=samples, 
-                    winLengthinms=settings['winLengthinms'],
-                    shiftLengthinms=settings['shiftLengthinms'], 
-                    lp_order=settings['n_coeffs'], mcadams=rand_mc_coeff)
+    # convert from int16 to float
+    if samples.dtype == np.int16:
+        samples = samples / (np.iinfo(np.int16).max + 1)
+    
+    samples = anonym_v2(freq=freq, samples=samples, 
+        winLengthinms=settings['winLengthinms'],
+        shiftLengthinms=settings['shiftLengthinms'], 
+        lp_order=settings['n_coeffs'], mcadams=mcadams)
 
-                # convert float to int16
-                samples = (samples / np.max(np.abs(samples)) \
-                           * (np.iinfo(np.int16).max - 1)).astype(np.int16)
+    # convert float to int16
+    samples = (samples / np.max(np.abs(samples)) \
+                * (np.iinfo(np.int16).max - 1)).astype(np.int16)
 
-                # write to buffer
-                with wave.open(output_file, 'wb') as stream:
-                    stream.setframerate(freq)
-                    stream.setnchannels(1)
-                    stream.setsampwidth(2)
-                    stream.writeframes(samples)
-                print(f'{utid} {output_file}', file=writer)
-    print('Done')
-
+    # write to buffer
+    with output_file.open('wb') as file:
+        with wave.open(file, 'wb') as stream:
+            stream.setframerate(freq)
+            stream.setnchannels(1)
+            stream.setsampwidth(2)
+            stream.writeframes(samples)
+    
+    #return the .scp entry
+    return f'{utid} {output_file}\n'
+            
 
 def anonym(freq, samples, winLengthinms=20, shiftLengthinms=10, lp_order=20, mcadams=0.8):
-
-
-    #print(mcadams)
     eps = np.finfo(np.float32).eps
     samples = samples + eps
     
