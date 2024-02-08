@@ -3,17 +3,17 @@
 ## (Required) Install
 
 1. `git clone -b vpc  https://github.com/DigitalPhonetics/VoicePAT.git`
-2. `bash 00_install.sh`
+2. `./00_install.sh`
 3. `source env.sh`
 
 ## (Required) Download VPC data and pretrianed models
 
-`bash 01_download_data_model.sh` Password required, please register to get password.
+`./01_download_data_model.sh` Password required, please register to get password.
 
 ### B2 Anonymization + Evaluation 
 If you would like to generate B2 audio and evaluate it without modifying, or submit Python scripts separately, simply run
 
-`bash 02_run.sh`
+`./02_run.sh`
 
 then you can get the results for B2.
 

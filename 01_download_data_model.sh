@@ -1,19 +1,28 @@
-#!/bin/sh
+#!/bin/bash
 
-for data_set in libri_dev libri_test; do   
+source env.sh
+
+for data_set in libri_dev libri_test; do
     dir=data/$data_set
     if [ ! -f $dir/wav.scp ] ; then
+        if [ -z $password ]; then
+          echo "Enter password provided by the organisers (check README.md registration):"
+          read -s password
+          echo
+        fi
         [ -d $dir ] && rm -r $dir
-        if [ ! -f $data_set.tar.gz ]; then
-            echo "  You will be prompted to enter password for getdata@voiceprivacychallenge.univ-avignon.fr"
-            sftp getdata@voiceprivacychallenge.univ-avignon.fr <<EOF
+        if [ ! -f corpora/$data_set.tar.gz ]; then
+            mkdir -p corpora
+            cd corpora
+            sshpass -p "$password"  sftp getdata@voiceprivacychallenge.univ-avignon.fr <<EOF
     cd /challengedata/corpora
     get $data_set.tar.gz
     bye
 EOF
+  cd -
   fi
   echo "  Unpacking $data_set data set..."
-  tar -xf $data_set.tar.gz || exit 1
+  tar -xf corpora/$data_set.tar.gz || exit 1
   [ ! -f $dir/text ] && echo "File $dir/text does not exist" && exit 1
   cut -d' ' -f1 $dir/text > $dir/text1
   cut -d' ' -f2- $dir/text | sed -r 's/,|!|\?|\./ /g' | sed -r 's/ +/ /g' | awk '{print toupper($0)}' > $dir/text2
