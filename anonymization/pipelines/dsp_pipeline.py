@@ -30,10 +30,12 @@ class DSPPipeline:
             
         # anonymize libri360 if it exists
         if self.libri_360_data_dir:
+            print(f'Processing libri_train_360...')
             process_data(dataset_path=self.libri_360_data_dir, 
                     anon_level=self.modules_config['anon_level_libri_360'], 
                     results_dir=self.config['results_dir'],
                     settings=self.modules_config)
+            print('Done')
         return
 
 if __name__ == "__main__":
