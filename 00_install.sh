@@ -22,7 +22,7 @@ MAMBA_VERSION=1.5.1-0
 CUDA_VERSION=11.7
 TORCH_VERSION=2.0.1
 
-MAMBA_PACKAGES_TO_INSTALL="sshpass sox libflac inotify-tools git-lfs ffmpeg wget cmake ncurses ninja python=3.10 nvtop automake libtool gxx=12.3.0 gcc=12.3.0 python-sounddevice tqdm pyarrow"
+MAMBA_PACKAGES_TO_INSTALL="sshpass sox libflac inotify-tools git-lfs ffmpeg wget make cmake ncurses ninja python=3.10 nvtop automake libtool gxx=12.3.0 gcc=12.3.0 python-sounddevice"
 
 ESPAK_VERSION=1.51.1
 
@@ -56,6 +56,7 @@ if [ -e "$venv_dir" ]; then export PATH="$venv_dir/bin:$PATH"; fi
 echo "#!/bin/bash" >> env.sh
 echo "eval \"\$($mamba_bin shell hook --shell=bash)\"" >> env.sh
 echo "micromamba activate $venv_dir" >> env.sh
+echo "export LD_LIBRARY_PATH=$venv_dir/lib/:$LD_LIBRARY_PATH" >> env.sh
 source ./env.sh
 
 

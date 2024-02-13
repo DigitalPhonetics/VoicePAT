@@ -5,6 +5,7 @@ from speechbrain.pretrained import EncoderASR, EncoderDecoderASR
 from speechbrain.utils.metric_stats import ErrorRateStats
 import torch
 import torchaudio
+import tqdm
 
 from utils import read_kaldi_format
 
@@ -66,7 +67,7 @@ class InferenceSpeechBrainASR:
 
     def transcribe_audios(self, data, out_file):
         texts = {}
-        for batch in data:
+        for batch in tqdm.tqdm(data):
             filenames, inputs, lengths = batch
             inputs = inputs.to(self.device)
             lengths = lengths.to(self.device)
