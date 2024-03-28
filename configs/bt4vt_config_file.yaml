@@ -1,0 +1,19 @@
+    speaker_metadata_file: "/home/leschaaa@alabsad.fau.de/VoicePAT/data/bias_benchmark/bias_benchmark_metadata.csv"
+    results_dir: "/home/leschaaa@alabsad.fau.de/VoicePAT/evaluation/bias/results/"
+
+    # for metadata
+    id_column: "ID"
+    select_columns: ["Sex", "DR"]
+    speaker_groups: [["Sex"], ["DR"], ["Sex", "DR"]]
+
+    # for scores
+    reference_filepath_column: "ref_file"
+    test_filepath_column: "com_file"
+    label_column: "lab"
+    scores_column: "sc"
+
+    # for dataset evaluation
+    dataset_evaluation: True
+
+    # for run_tests
+    dcf_costs: [[0.05, 1, 1]]

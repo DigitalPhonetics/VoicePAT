@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+voicepat_env
+
+# ignore results and wave files
+results
+exp
+data/bias_benchmark/wav/*.wav

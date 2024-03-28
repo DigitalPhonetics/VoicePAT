@@ -1,0 +1,25 @@
+root_dir: /home/leschaaa@alabsad.fau.de/VoicePAT
+exp_dir: !ref <root_dir>/exp
+
+datasets: !include:datasets_bias_evaluation.yaml
+
+eval_steps:  # all metrics in this list will be computed in the evaluation. Remove entry to skip
+  bias:
+    - asv
+    - asr
+
+anon_data_suffix: anon  # suffix for dataset to signal that it is anonymized
+eval_data_dir: /home/leschaaa@alabsad.fau.de/VoicePAT/results/formatted_data/21-03-24_17:02 # path to anonymized evaluation data in kaldi format, e.g. <eval_data_dir>/libri_test_enrolls/wav.scp etc.
+
+bias:
+  asv:
+    vec_type: xvector
+    model_dir: !ref <exp_dir>/asv_pre_<bias[asv][vec_type]>  # path to existing ASV model or output for trained ASV model
+    results_dir: !ref <bias[asv][model_dir]>/cosine_out  # path to save evaluation results
+    gender_split: True
+    bt4vt_config_file: !ref <root_dir>/configs/bt4vt_config_file.yaml
+
+  asr:
+    model_name: asr_pre
+    model_dir: !ref <exp_dir>/<bias[asr][model_name]>
+    results_dir: 
